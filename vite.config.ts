@@ -10,6 +10,9 @@ export default defineConfig({
   server: {
     port: 5000,
   },
+  build: {
+    assetsInlineLimit: 0, // Set to 0 to disable inlining
+  },
   plugins: [react()],
   resolve: {
     alias: {
