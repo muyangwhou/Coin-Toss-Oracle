@@ -1,0 +1,32 @@
+.yang-line {
+    border-bottom: 5px solid black;
+    width: 60px;
+    margin: 5px auto;
+  }
+  .w60 {
+    width: 60px
+  }
+
+  .yin-line {
+    border-bottom: 5px solid black;
+    width: 20px;
+    margin: 5px 0;
+    position: relative;
+  }
+  
+  .yin-line:after {
+    content: '';
+    border-bottom: 5px solid black;
+    width: 20px;
+    position: absolute;
+    top: 0;
+    left: 40px;
+  }
+
+  .line-wrap {
+    display: flex;
+    flex-direction: column-reverse; 
+    height: 90px;
+    justify-content: flex-start; 
+  }
+  
