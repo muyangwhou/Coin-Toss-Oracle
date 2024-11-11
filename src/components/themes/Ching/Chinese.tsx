@@ -305,12 +305,13 @@ const Chinese = () => {
           </CardHeader>
           <CardContent className="p-6">
             <form onSubmit={handleSubmit}>
-              <div className="grid w-full items-center gap-4">
+              <div className="grid w-full items-center">
+                <Label htmlFor="xdc">Select Currency:</Label>
                 <RadioGroup
                   onValueChange={(e) => {
                     setCurrency(e);
                   }}
-                  className="flex gap-4"
+                  className="flex gap-4 mb-4 mt-2"
                   defaultValue={currency}
                 >
                   <div className="flex items-center space-x-2">
@@ -331,7 +332,7 @@ const Chinese = () => {
                   </div>
                 </RadioGroup>
 
-                <div className="flex flex-col space-y-1.5">
+                <div className="flex flex-col space-y-1.5 mb-4">
                   <Label htmlFor="wish">Enter wish:</Label>
                   <div className="flex w-full max-w-sm items-center space-x-2 relative">
                     <Input
@@ -349,7 +350,7 @@ const Chinese = () => {
                     />
                   </div>
                 </div>
-                <div className="flex flex-col space-y-1.5">
+                <div className="flex flex-col space-y-1.5 mb-4">
                   <Label htmlFor="balance">Enter balance (DOPU Token):</Label>
                   <div className="flex w-full max-w-sm items-center space-x-2 relative">
                     <Input

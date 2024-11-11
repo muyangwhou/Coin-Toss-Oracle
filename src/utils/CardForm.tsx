@@ -35,11 +35,12 @@ const CardForm: React.FC<Props> = ({
       <CardContent className="p-6">
         <div className="flex flex-col space-y-1.5 mb-5">
           <div className="mb-3">
+            <Label htmlFor="xdc">Select Currency:</Label>
             <RadioGroup
               onValueChange={(e) => {
                 setCurrency(e);
               }}
-              className="flex gap-4"
+              className="flex gap-4 mt-1"
               defaultValue={currency}
             >
               <div className="flex items-center space-x-2">
