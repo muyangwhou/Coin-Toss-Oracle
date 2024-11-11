@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { BsCopy } from "react-icons/bs";
 import {
   Tooltip,
@@ -19,6 +19,7 @@ import {
 import { FaUser, FaWallet } from "react-icons/fa";
 import { MyBalanceContext } from "./BalanceContext";
 import { xdc, xdcTestnet } from "viem/chains";
+import { api } from "@/utils/api";
 
 const DropdownMenuDemo = () => {
   const [toolTip, setToolTip] = useState("Copy To Clipboard");
@@ -133,6 +134,7 @@ const DropdownMenuDemo = () => {
 const Connect = () => {
   const context = useContext(MyBalanceContext);
   const balance = context?.balance;
+  const address = context?.address;
   const xdcBalance = context?.xdcBalance;
   const gamaSymbol = context?.gamaSymbol;
   const isConnected = context?.isConnected;
@@ -140,9 +142,31 @@ const Connect = () => {
   const connect = context?.connect;
   const chainId = context?.chainId;
   const injectedConnector = context?.injectedConnector;
+
   const formatter = new Intl.NumberFormat("en-US");
   const formattedBalance = formatter.format(Number(balance));
   const formattedXdcBalance = formatter.format(Number(xdcBalance));
+  const apiCalledRef = useRef(false);
+
+  const fetchData = async () => {
+    try {
+      const sendPayload = await api.generateWalletToken({
+        walletAddress: address!,
+        chainId: chainId!,
+      });
+      console.log("sendPayload", sendPayload);
+
+      apiCalledRef.current = true;
+    } catch (error) {
+      console.error("API call error:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (isConnected && !apiCalledRef.current) {
+      fetchData();
+    }
+  }, [isConnected, address, chainId]);
 
   if (isConnected) {
     return (
@@ -161,6 +185,7 @@ const Connect = () => {
       </div>
     );
   } else {
+    apiCalledRef.current = false;
     return (
       <button
         disabled={!connected}

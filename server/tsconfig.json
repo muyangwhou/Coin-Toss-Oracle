@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "es2017",
+    "module": "commonjs",
+    "lib": ["es2017", "dom"],
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "outDir": "../server-build",
+    "rootDir": ".",
+    "strict": true,
+    "noImplicitAny": true,
+    "experimentalDecorators": true
+  },
+  "include": [".", "@types"],
+  "exclude": ["node_modules", "dist"]
+}

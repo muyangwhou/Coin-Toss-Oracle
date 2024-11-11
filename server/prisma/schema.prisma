@@ -1,0 +1,53 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Wallet {
+  id             String        @id @default(uuid()) @map("_id")
+  walletAddress  String
+  chainId        Int
+  dailyTossCount Int
+  totalTossCount Int
+  lastTossDate   DateTime?
+  streak         Int
+  tokenBalance   Float
+  tosses         TossLog[]
+  Leaderboard    Leaderboard[]
+
+  @@unique([walletAddress, chainId]) // Composite unique constraint
+}
+
+model TossLog {
+  id           String   @id @default(uuid()) @map("_id")
+  walletId     String
+  timestamp    DateTime @default(now())
+  theme        String
+  tokensBurned Float
+  chainId        Int
+  currency      CurrencyType  
+  wallet Wallet @relation(fields: [walletId], references: [id]) // Relation via Wallet's id
+}
+
+enum CurrencyType {
+  XDC
+  DOPU
+}
+model Leaderboard {
+  id           String @id @default(uuid()) @map("_id")
+  walletId     String
+  tokensBurned Float
+  chainId        Int
+  currency      CurrencyType  
+  wallet Wallet @relation(fields: [walletId], references: [id]) // Relation via Wallet's id
+}

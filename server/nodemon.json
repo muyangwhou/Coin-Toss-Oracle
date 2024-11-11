@@ -1,0 +1,7 @@
+{
+  "watch": "./",
+  "ext": ".ts,.js",
+  "restartable": "rs",
+  "ignore": [".env"],
+  "exec": "npx ts-node -P tsconfig.json index.ts"
+}
