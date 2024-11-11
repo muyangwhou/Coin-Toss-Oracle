@@ -17,12 +17,15 @@ import Web3 from "web3";
 import { MyBalanceContext } from "@/components/BalanceContext";
 import toast from "react-hot-toast";
 import { formatTransaction } from "@/utils/formatTransactionHash";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const Chinese = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [gameScreen, setGameScreen] = useState<boolean>(false);
   const [isDialog, setIsDialog] = useState<boolean>(false);
   const [inputWish, setInputWish] = useState<string>("");
+  const [inputBalance, setInputBalance] = useState<string>("");
+  const [currency, setCurrency] = useState<string>("xdc");
   const [toss1, setToss1] = useState<number>();
   const [toss2, setToss2] = useState<number>();
   const [toss3, setToss3] = useState<number>();
@@ -38,11 +41,47 @@ const Chinese = () => {
   const chainId = context?.chainId;
   const setBalance = context?.setBalance;
   const address = context?.address;
+  const balance = context?.balance;
+  const xdcBalance = context?.xdcBalance;
+  const setXdcBalance = context?.setXdcBalance;
 
-  const burnTokens = async () => {
-    setIsLoading(true);
-    const web3 = new Web3(window.web3);
+  const web3 = new Web3(window.web3);
+  const valueInWei = web3.utils.toWei(inputBalance, "ether");
 
+  const burnXdcBalance = async () => {
+    const burnAddress =
+      chainId === 51
+        ? import.meta.env.VITE_DOPU_TESTNET_BURN_ADDRESS!
+        : import.meta.env.VITE_DOPU_MAINNET_BURN_ADDRESS;
+
+    const gasLimit = "21000";
+    const gasPrice = await web3.eth.getGasPrice();
+
+    const transaction = {
+      from: address,
+      to: burnAddress,
+      value: valueInWei,
+      gas: gasLimit,
+      gasPrice: gasPrice,
+    };
+
+    const txResponse = await web3.eth.sendTransaction(transaction);
+
+    const formattedTransaction = formatTransaction(
+      txResponse.transactionHash as string
+    );
+    setFormattedTransactionHash(formattedTransaction!);
+    setTransactionHash(txResponse.transactionHash as string);
+    setGameScreen(true);
+
+    const newBalance = await web3.eth.getBalance(address!);
+    const formattedXdcBalance = Number(
+      (Number(newBalance) / Math.pow(10, 18)).toFixed(2)
+    );
+    setXdcBalance!(formattedXdcBalance.toString());
+  };
+
+  const burnDopuBalance = async () => {
     const testnetContractAddress =
       chainId === 51
         ? import.meta.env.VITE_XDC_TESTNET_CONTRACT_ADDRESS!
@@ -53,23 +92,17 @@ const Chinese = () => {
       testnetContractAddress
     );
 
-    const valueInWei = web3.utils.toWei(1, "ether");
-
-    const testnetBurnAddress =
-      chainId === 51
-        ? import.meta.env.VITE_XDC_TESTNET_CONTRACT_ADDRESS
-        : import.meta.env.VITE_XDC_MAINNET_CONTRACT_ADDRESS;
-
     const gasPrice = await web3.eth.getGasPrice();
 
     await tokenContract.methods
-      .transfer(testnetBurnAddress, valueInWei)
+      .transfer(testnetContractAddress, valueInWei)
       .send({ from: address, gasPrice: gasPrice.toString() })
       .on("receipt", async function (txs) {
         const formattedTransaction = formatTransaction(txs.transactionHash);
         setFormattedTransactionHash(formattedTransaction!);
         setTransactionHash(txs.transactionHash);
-        setIsDialog(true);
+        setGameScreen(true);
+
         const balance = await tokenContract.methods.balanceOf(address).call();
         const getDecimals: number = await tokenContract.methods
           .decimals()
@@ -79,22 +112,37 @@ const Chinese = () => {
           Number(Number(balance) / Math.pow(10, decimals)).toFixed(2)
         );
         setBalance!(formattedBalance.toString());
-      })
-      .catch((error: unknown) => {
-        if (error instanceof Error) {
-          console.log("Error occurred in approve transaction:", error);
-          setIsLoading(false);
-          setGameScreen(false);
-          toast.error(error.message);
-        }
       });
-    setIsLoading(false);
+  };
+
+  const burnTokens = async () => {
+    setIsLoading(true);
+
+    try {
+      if (currency === "xdc") {
+        await burnXdcBalance();
+      } else {
+        await burnDopuBalance();
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("Transaction failed:", error);
+        toast.error(error.message || "Transaction failed. Please try again.");
+        setCurrency("xdc");
+        setInputBalance("");
+        setInputWish("");
+      }
+    } finally {
+      setIsLoading(false);
+      setCurrency("xdc");
+      setInputBalance("");
+      setInputWish("");
+    }
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setGameScreen(true);
-    setInputWish("");
+    burnTokens();
   };
 
   const tossCoin = () => {
@@ -136,7 +184,7 @@ const Chinese = () => {
 
   useEffect(() => {
     if (lineData.length === 6) {
-      burnTokens();
+      setIsDialog(true);
       const data = lineData.map((line, index) => {
         return changingLines[index]
           ? line === "Yang"
@@ -168,7 +216,7 @@ const Chinese = () => {
   }, [lineData]);
 
   useEffect(() => {
-    if (isDialog === false || gameScreen === false) {
+    if (isDialog === false) {
       setToss1(undefined);
       setToss2(undefined);
       setToss3(undefined);
@@ -178,12 +226,10 @@ const Chinese = () => {
       setHexagram(undefined);
       setTransactionHash("");
       setFormattedTransactionHash("");
-    }
-  }, [isDialog, gameScreen]);
-
-  useEffect(() => {
-    if (isDialog === false) {
+      setInputBalance("");
+      setInputWish("");
       setGameScreen(false);
+      setCurrency("xdc");
     }
   }, [isDialog]);
 
@@ -254,19 +300,46 @@ const Chinese = () => {
         </div>
       ) : (
         <Card className="w-[350px]">
-          <CardHeader>
-            <CardTitle>Enter Your Wish</CardTitle>
+          <CardHeader className="text-center border-b border-slate-200 p-4">
+            <CardTitle className="text-lg">I Ching Fortune</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6">
             <form onSubmit={handleSubmit}>
-              <div className="grid w-full items-center gap-4">
-                <div className="flex flex-col space-y-1.5">
-                  <Label htmlFor="name">Enter wish:</Label>
+              <div className="grid w-full items-center">
+                <Label htmlFor="xdc">Select Currency:</Label>
+                <RadioGroup
+                  onValueChange={(e) => {
+                    setCurrency(e);
+                  }}
+                  className="flex gap-4 mb-4 mt-2"
+                  defaultValue={currency}
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem
+                      value="xdc"
+                      id="xdc"
+                      checked={currency === "xdc"}
+                    />
+                    <Label htmlFor="xdc">XDC</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem
+                      value="dopu"
+                      id="dopu"
+                      checked={currency === "dopu"}
+                    />
+                    <Label htmlFor="dopu">DOPU</Label>
+                  </div>
+                </RadioGroup>
+
+                <div className="flex flex-col space-y-1.5 mb-4">
+                  <Label htmlFor="wish">Enter wish:</Label>
                   <div className="flex w-full max-w-sm items-center space-x-2 relative">
                     <Input
                       type="text"
                       required
                       name="wish"
+                      id="wish"
                       className="relative"
                       autoComplete="off"
                       value={inputWish}
@@ -277,8 +350,43 @@ const Chinese = () => {
                     />
                   </div>
                 </div>
+                <div className="flex flex-col space-y-1.5 mb-4">
+                  <Label htmlFor="balance">Enter balance (DOPU Token):</Label>
+                  <div className="flex w-full max-w-sm items-center space-x-2 relative">
+                    <Input
+                      type="text"
+                      id="balance"
+                      required
+                      pattern="[0-9]*"
+                      inputMode="numeric"
+                      name="balance"
+                      className="relative"
+                      value={inputBalance}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^\d*$/.test(value)) {
+                          setInputBalance(value);
+                        }
+                      }}
+                      placeholder="Enter balance"
+                    />
+                  </div>
+                </div>
                 <div className="flex justify-center">
-                  <Button type="submit">Wish</Button>
+                  <Button
+                    disabled={
+                      inputWish === "" || currency === "xdc"
+                        ? Number(inputBalance)! >
+                            Number(parseFloat(xdcBalance!)) ||
+                          1 > Number(inputBalance)
+                        : Number(inputBalance)! >
+                            Number(parseFloat(balance!)) ||
+                          1 > Number(inputBalance)
+                    }
+                    type="submit"
+                  >
+                    Wish
+                  </Button>
                 </div>
               </div>
             </form>

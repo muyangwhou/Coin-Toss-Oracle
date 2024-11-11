@@ -133,6 +133,7 @@ const DropdownMenuDemo = () => {
 const Connect = () => {
   const context = useContext(MyBalanceContext);
   const balance = context?.balance;
+  const xdcBalance = context?.xdcBalance;
   const gamaSymbol = context?.gamaSymbol;
   const isConnected = context?.isConnected;
   const connected = context?.connected;
@@ -141,6 +142,7 @@ const Connect = () => {
   const injectedConnector = context?.injectedConnector;
   const formatter = new Intl.NumberFormat("en-US");
   const formattedBalance = formatter.format(Number(balance));
+  const formattedXdcBalance = formatter.format(Number(xdcBalance));
 
   if (isConnected) {
     return (
@@ -149,6 +151,10 @@ const Connect = () => {
           <div className="font-semibold">
             {formattedBalance} {gamaSymbol}
           </div>
+          <FaWallet />
+        </div>
+        <div className="flex justify-between items-center border px-5 rounded-md py-1 gap-3">
+          <div className="font-semibold">{formattedXdcBalance} XDC</div>
           <FaWallet />
         </div>
         <DropdownMenuDemo />

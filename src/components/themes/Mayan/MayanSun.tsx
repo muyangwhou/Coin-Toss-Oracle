@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 import { formatTransaction } from "@/utils/formatTransactionHash";
 import coin from "../../../assets/images/nativeAmericanCoin.jpeg";
 import { MayanDto } from "@/utils/types";
-import { mayanSigns } from "./mayanSigns";
+// import { mayanSigns } from "./mayanSigns";
 
 const MayanSun = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -17,6 +17,10 @@ const MayanSun = () => {
   const [transactionHash, setTransactionHash] = useState<string>("");
   const [formattedTransactionHash, setFormattedTransactionHash] =
     useState<string>("");
+  console.log("result", result);
+  console.log("transactionHash", transactionHash);
+  console.log("formattedTransactionHash", formattedTransactionHash);
+
   const [isDialog, setIsDialog] = useState<boolean>(false);
 
   const context = useContext(MyBalanceContext);
@@ -24,7 +28,7 @@ const MayanSun = () => {
   const setBalance = context?.setBalance;
   const address = context?.address;
 
-  const flipCoin = async () => {
+  const tossCoin = async () => {
     setIsFlipping(true);
     setIsLoading(true);
 
@@ -67,11 +71,11 @@ const MayanSun = () => {
         );
 
         setBalance!(formattedBalance.toString());
-        const currentHour = new Date().getHours();
+        /*  const currentHour = new Date().getHours();
         const randomIndex = Math.floor(Math.random() * mayanSigns.length);
         const timeEnergy = currentHour < 12 ? "growing" : "diminishing";
 
-        /* setResult({
+        setResult({
             ...mayanSigns[randomIndex],
             timeEnergy,
             interpretation: `The energy is ${timeEnergy}. ${mayanSigns[randomIndex].name}'s energy suggests a time for ${mayanSigns[randomIndex].meaning.toLowerCase()}.`
@@ -132,7 +136,7 @@ const MayanSun = () => {
             <img src={coin} className="rounded-full" alt="" />
           </div>
           <button
-            onClick={flipCoin}
+            onClick={tossCoin}
             disabled={isFlipping}
             className="bg-yellow-800 hover:bg-yellow-900 text-white px-6 py-3 rounded-lg"
           >
