@@ -16,6 +16,8 @@ declare type LayoutType = {
 type MyBalanceContextType = {
   balance: string;
   setBalance: React.Dispatch<React.SetStateAction<string>>;
+  xdcBalance?: string;
+  setXdcBalance?: React.Dispatch<React.SetStateAction<string>>;
   gamaSymbol: string;
   setGamaSymbol: React.Dispatch<React.SetStateAction<string>>;
   isConnected: boolean;
@@ -38,6 +40,7 @@ export const MyBalanceContext = createContext<MyBalanceContextType | null>(
 );
 function BalanceContext({ children }: LayoutType) {
   const [balance, setBalance] = useState<string>("0");
+  const [xdcBalance, setXdcBalance] = useState<string>("0");
   const [gamaSymbol, setGamaSymbol] = useState<string>("");
   const { address, isConnected } = useAccount();
   const [connected, setConnected] = useState(false);
@@ -74,6 +77,13 @@ function BalanceContext({ children }: LayoutType) {
         Number(Number(balance) / Math.pow(10, decimals)).toFixed(2)
       );
       setBalance(formattedBalance.toString());
+
+      const xdcTokenContract = await web3.eth.getBalance(address);
+
+      const formattedXdcBalance = Number(
+        Number(Number(xdcTokenContract) / Math.pow(10, decimals)).toFixed(2)
+      );
+      setXdcBalance(formattedXdcBalance.toString());
     } catch (error) {
       console.error("Error fetching Gama balance:", error);
     }
@@ -98,6 +108,8 @@ function BalanceContext({ children }: LayoutType) {
       value={{
         balance,
         setBalance,
+        xdcBalance,
+        setXdcBalance,
         gamaSymbol,
         setGamaSymbol,
         isConnected,

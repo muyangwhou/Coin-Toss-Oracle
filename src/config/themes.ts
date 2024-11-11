@@ -98,4 +98,10 @@ export const themes = [
     img: theme14,
     imgAltText: "Judaism-theme-image",
   },
+  /* {
+    title: "Custom Theme",
+    path: "/custom-theme",
+    img: theme14,
+    imgAltText: "Custom-theme-image",
+  }, */
 ];

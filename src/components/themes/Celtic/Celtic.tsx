@@ -1,5 +1,4 @@
 import { useContext, useEffect, useState } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { runes } from "./runes";
 import { CelticDto } from "@/utils/types";
 import { FourSquare } from "react-loading-indicators";
@@ -9,26 +8,65 @@ import { formatTransaction } from "@/utils/formatTransactionHash";
 import { xrc20ABI } from "@/utils/XRC20ABI";
 import Web3 from "web3";
 import CelticModal from "./CelticModal";
+import CardForm from "@/utils/CardForm";
 
 const Celtic = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [currentRune, setCurrentRune] = useState<CelticDto>();
   const [isFlipping, setIsFlipping] = useState(false);
   const [transactionHash, setTransactionHash] = useState<string>("");
+  const [inputBalance, setInputBalance] = useState<string>("");
   const [formattedTransactionHash, setFormattedTransactionHash] =
     useState<string>("");
   const [isDialog, setIsDialog] = useState<boolean>(false);
+  const [currency, setCurrency] = useState<string>("xdc");
 
   const context = useContext(MyBalanceContext);
   const chainId = context?.chainId;
   const setBalance = context?.setBalance;
+  const setXdcBalance = context?.setXdcBalance;
   const address = context?.address;
 
-  const tossCoin = async () => {
-    setIsFlipping(true);
-    setIsLoading(true);
+  const web3 = new Web3(window.web3);
+  const valueInWei = web3.utils.toWei(inputBalance, "ether");
 
-    const web3 = new Web3(window.web3);
+  const burnXdcBalance = async () => {
+    const burnAddress =
+      chainId === 51
+        ? import.meta.env.VITE_DOPU_TESTNET_BURN_ADDRESS!
+        : import.meta.env.VITE_DOPU_MAINNET_BURN_ADDRESS;
+
+    const gasLimit = "21000";
+    const gasPrice = await web3.eth.getGasPrice();
+
+    const transaction = {
+      from: address,
+      to: burnAddress,
+      value: valueInWei,
+      gas: gasLimit,
+      gasPrice: gasPrice,
+    };
+
+    const txResponse = await web3.eth.sendTransaction(transaction);
+
+    const formattedTransaction = formatTransaction(
+      txResponse.transactionHash as string
+    );
+    setFormattedTransactionHash(formattedTransaction!);
+    setTransactionHash(txResponse.transactionHash as string);
+
+    const newBalance = await web3.eth.getBalance(address!);
+    const formattedXdcBalance = Number(
+      (Number(newBalance) / Math.pow(10, 18)).toFixed(2)
+    );
+    setXdcBalance!(formattedXdcBalance.toString());
+
+    const randomRune = runes[Math.floor(Math.random() * runes.length)];
+    setCurrentRune(randomRune);
+    setIsFlipping(true);
+  };
+
+  const burnDopuBalance = async () => {
     const testnetContractAddress =
       chainId === 51
         ? import.meta.env.VITE_XDC_TESTNET_CONTRACT_ADDRESS!
@@ -39,7 +77,7 @@ const Celtic = () => {
       testnetContractAddress
     );
 
-    const valueInWei = web3.utils.toWei(1, "ether");
+    const valueInWei = web3.utils.toWei(inputBalance, "ether");
 
     const testnetBurnAddress =
       chainId === 51
@@ -68,26 +106,48 @@ const Celtic = () => {
 
         const randomRune = runes[Math.floor(Math.random() * runes.length)];
         setCurrentRune(randomRune);
-        setIsFlipping(false);
         setBalance!(formattedBalance.toString());
-        setIsDialog(true);
-      })
-      .catch((error: unknown) => {
-        if (error instanceof Error) {
-          console.log("Error occurred in approve transaction:", error);
-          setIsLoading(false);
-          setIsFlipping(false);
-          toast.error(error.message);
-        }
+        setIsFlipping(true);
       });
-
-    setIsLoading(false);
-    setIsFlipping(false);
   };
+
+  const tossCoin = async () => {
+    setIsLoading(true);
+    try {
+      if (currency === "xdc") {
+        await burnXdcBalance();
+      } else {
+        await burnDopuBalance();
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        console.log("Error occurred in approve transaction:", error);
+        setIsLoading(false);
+        setInputBalance("");
+        setCurrency("xdc");
+        toast.error(error.message);
+      }
+    } finally {
+      setIsLoading(false);
+      setInputBalance("");
+      setCurrency("xdc");
+    }
+  };
+
+  useEffect(() => {
+    if (isFlipping === true) {
+      setTimeout(() => {
+        setIsFlipping(false);
+        setIsDialog(true);
+      }, 4000);
+    }
+  }, [isFlipping]);
 
   useEffect(() => {
     if (isDialog === false) {
       setCurrentRune(undefined);
+      setInputBalance("");
+      setCurrency("xdc");
     }
   }, [isDialog]);
 
@@ -110,27 +170,71 @@ const Celtic = () => {
           </div>
         </div>
       )}
-      <div className="max-w-md mx-auto w-full">
-        <Card className="bg-slate-50">
-          <CardHeader className="text-center border-b border-slate-200">
-            <CardTitle className="text-center text-2xl">
-              Celtic Rune Toss
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center gap-6 p-6">
-            <div className="bg-slate-200 w-32 h-32 rounded-full border-4 border-slate-700 flex items-center justify-center">
+      {isFlipping ? (
+        <div className="relative w-32 h-32 [perspective:1000px]">
+          <div
+            className={`w-full h-full relative [transform-style:preserve-3d] ${
+              isFlipping ? "coin-flip" : ""
+            }`}
+          >
+            <div className="absolute w-full h-full rounded-full border-4 border-slate-600 bg-slate-200 flex items-center justify-center [backface-visibility:hidden]">
               <span className="text-5xl">ᚱ</span>
             </div>
-            <button
-              onClick={tossCoin}
-              disabled={isFlipping}
-              className="bg-slate-700 hover:bg-slate-800 text-white px-6 py-3 rounded-lg"
-            >
-              Toss
-            </button>
-          </CardContent>
-        </Card>
-      </div>
+            <div className="absolute w-full h-full rounded-full border-4 border-slate-600 bg-slate-200 flex items-center justify-center [transform:rotateY(180deg)] [backface-visibility:hidden]">
+              <span className="text-5xl">ᚢ</span>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          <CardForm
+            inputBalance={inputBalance}
+            setInputBalance={setInputBalance}
+            setCurrency={setCurrency}
+            currency={currency}
+            tossCoin={tossCoin}
+            title="Celtic Rune Toss"
+          />
+          {/* <Card className="w-[350px] bg-slate-50">
+            <CardHeader className="text-center border-b border-slate-200 p-4">
+              <CardTitle className="text-lg">Celtic Rune Toss</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="flex flex-col space-y-1.5 mb-5">
+                <Label htmlFor="balance">Enter balance (DOPU Token):</Label>
+                <div className="flex w-full items-center space-x-2 relative">
+                  <Input
+                    type="text"
+                    id="balance"
+                    required
+                    pattern="[0-9]*"
+                    inputMode="numeric"
+                    name="balance"
+                    className="relative"
+                    value={inputBalance}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d*$/.test(value)) {
+                        setInputBalance(value);
+                      }
+                    }}
+                    placeholder="Enter balance"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col items-center gap-6">
+                <Button
+                  onClick={tossCoin}
+                  disabled={1 > Number(inputBalance)}
+                  className="bg-slate-700 hover:bg-slate-800 rounded-lg"
+                >
+                  Toss
+                </Button>
+              </div>
+            </CardContent>
+          </Card> */}
+        </>
+      )}
     </div>
   );
 };

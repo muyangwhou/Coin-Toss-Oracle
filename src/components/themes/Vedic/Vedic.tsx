@@ -1,5 +1,4 @@
 import { useContext, useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MyBalanceContext } from "@/components/BalanceContext";
 import { FourSquare } from "react-loading-indicators";
 import { guidanceMessages } from "./guidanceMessage";
@@ -8,31 +7,78 @@ import { xrc20ABI } from "@/utils/XRC20ABI";
 import Web3 from "web3";
 import toast from "react-hot-toast";
 import { formatTransaction } from "@/utils/formatTransactionHash";
-import coin from "../../../assets/images/vedicCoin.jpeg";
+import omImg from "../../../assets/images/vedicCoin.jpeg";
+import CardForm from "@/utils/CardForm";
 
 const Vedic = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isFlipping, setIsFlipping] = useState(false);
   const [result, setResult] = useState("");
   const [guidance, setGuidance] = useState("");
+  const [inputBalance, setInputBalance] = useState<string>("");
   const [transactionHash, setTransactionHash] = useState<string>("");
   const [formattedTransactionHash, setFormattedTransactionHash] =
     useState<string>("");
   const [isDialog, setIsDialog] = useState<boolean>(false);
+  const [currency, setCurrency] = useState<string>("xdc");
 
   const context = useContext(MyBalanceContext);
   const chainId = context?.chainId;
   const setBalance = context?.setBalance;
+  const setXdcBalance = context?.setXdcBalance;
   const address = context?.address;
 
   const symbols = ["om", "lotus", "yantra"] as const;
   type SymbolType = (typeof symbols)[number];
 
-  const flipCoin = async () => {
-    setIsFlipping(true);
-    setIsLoading(true);
+  const web3 = new Web3(window.web3);
+  const valueInWei = web3.utils.toWei(inputBalance, "ether");
 
-    const web3 = new Web3(window.web3);
+  const burnXdcBalance = async () => {
+    const burnAddress =
+      chainId === 51
+        ? import.meta.env.VITE_DOPU_TESTNET_BURN_ADDRESS!
+        : import.meta.env.VITE_DOPU_MAINNET_BURN_ADDRESS;
+
+    const gasLimit = "21000";
+    const gasPrice = await web3.eth.getGasPrice();
+
+    const transaction = {
+      from: address,
+      to: burnAddress,
+      value: valueInWei,
+      gas: gasLimit,
+      gasPrice: gasPrice,
+    };
+
+    const txResponse = await web3.eth.sendTransaction(transaction);
+
+    const formattedTransaction = formatTransaction(
+      txResponse.transactionHash as string
+    );
+    setFormattedTransactionHash(formattedTransaction!);
+    setTransactionHash(txResponse.transactionHash as string);
+
+    const newBalance = await web3.eth.getBalance(address!);
+    const formattedXdcBalance = Number(
+      (Number(newBalance) / Math.pow(10, 18)).toFixed(2)
+    );
+    setXdcBalance!(formattedXdcBalance.toString());
+    const randomSymbol: SymbolType =
+      symbols[Math.floor(Math.random() * symbols.length)];
+
+    const areas = ["health", "relationships", "prosperity"] as const;
+    type AreaType = (typeof areas)[number];
+
+    const randomArea: AreaType =
+      areas[Math.floor(Math.random() * areas.length)];
+
+    setResult(randomSymbol);
+    setGuidance(guidanceMessages[randomSymbol][randomArea]);
+    setIsFlipping(true);
+  };
+
+  const burnDopuBalance = async () => {
     const testnetContractAddress =
       chainId === 51
         ? import.meta.env.VITE_XDC_TESTNET_CONTRACT_ADDRESS!
@@ -43,7 +89,7 @@ const Vedic = () => {
       testnetContractAddress
     );
 
-    const valueInWei = web3.utils.toWei(1, "ether");
+    const valueInWei = web3.utils.toWei(inputBalance, "ether");
 
     const testnetBurnAddress =
       chainId === 51
@@ -83,25 +129,48 @@ const Vedic = () => {
 
         setResult(randomSymbol);
         setGuidance(guidanceMessages[randomSymbol][randomArea]);
-        setIsDialog(true);
-      })
-      .catch((error: unknown) => {
-        if (error instanceof Error) {
-          console.log("Error occurred in approve transaction:", error);
-          setIsLoading(false);
-          setIsFlipping(false);
-          toast.error(error.message);
-        }
+        setIsFlipping(true);
       });
-
-    setIsLoading(false);
-    setIsFlipping(false);
   };
+
+  const tossCoin = async () => {
+    setIsLoading(true);
+    try {
+      if (currency === "xdc") {
+        await burnXdcBalance();
+      } else {
+        await burnDopuBalance();
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        console.log("Error occurred in approve transaction:", error);
+        setIsLoading(false);
+        setInputBalance("");
+        setCurrency("xdc");
+        toast.error(error.message);
+      }
+    } finally {
+      setIsLoading(false);
+      setCurrency("xdc");
+      setInputBalance("");
+    }
+  };
+
+  useEffect(() => {
+    if (isFlipping === true) {
+      setTimeout(() => {
+        setIsFlipping(false);
+        setIsDialog(true);
+      }, 4000);
+    }
+  }, [isFlipping]);
 
   useEffect(() => {
     if (isDialog === false) {
       setResult("");
       setGuidance("");
+      setInputBalance("");
+      setCurrency("xdc");
     }
   }, [isDialog]);
 
@@ -124,27 +193,79 @@ const Vedic = () => {
           </div>
         </div>
       )}
-      <Card className="max-w-md w-full mx-auto">
-        <CardHeader className="text-center border-b border-slate-200">
-          <CardTitle className="text-center text-2xl">
-            Vedic Coin Oracle
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col items-center gap-6 p-6">
+      {isFlipping ? (
+        <div className="relative w-32 h-32 [perspective:1000px]">
           <div
-            className={`w-32 h-32 rounded-full flex items-center justify-center`}
+            className={`w-full h-full relative [transform-style:preserve-3d] ${
+              isFlipping ? "coin-flip" : ""
+            }`}
           >
-            <img src={coin} className="rounded-full" alt="" />
+            <div className="absolute w-full h-full rounded-full flex items-center justify-center [backface-visibility:hidden]">
+              <img
+                src={omImg}
+                className="rounded-full animate-flip"
+                alt="Om-img"
+              />
+            </div>
+            <div className="absolute w-full h-full rounded-full flex items-center justify-center [transform:rotateY(180deg)] [backface-visibility:hidden]">
+              <img
+                src={omImg}
+                className="rounded-full animate-flip"
+                alt="Om-img"
+              />
+            </div>
           </div>
-          <button
-            onClick={flipCoin}
-            disabled={isFlipping}
-            className="bg-blue-700 hover:bg-blue-800 text-white px-6 py-3 rounded-lg"
-          >
-            Toss
-          </button>
-        </CardContent>
-      </Card>
+        </div>
+      ) : (
+        <>
+          <CardForm
+            inputBalance={inputBalance}
+            setInputBalance={setInputBalance}
+            setCurrency={setCurrency}
+            currency={currency}
+            tossCoin={tossCoin}
+            title="Vedic Coin Oracle"
+          />
+          {/* <Card className="w-[350px] bg-slate-50">
+            <CardHeader className="text-center border-b border-slate-200 p-4">
+              <CardTitle className="text-lg">Vedic Coin Oracle</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="flex flex-col space-y-1.5 mb-5">
+                <Label htmlFor="balance">Enter balance (DOPU Token):</Label>
+                <div className="flex w-full items-center space-x-2 relative">
+                  <Input
+                    type="text"
+                    id="balance"
+                    required
+                    pattern="[0-9]*"
+                    inputMode="numeric"
+                    name="balance"
+                    className="relative"
+                    value={inputBalance}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d*$/.test(value)) {
+                        setInputBalance(value);
+                      }
+                    }}
+                    placeholder="Enter balance"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col items-center gap-6">
+                <Button
+                  onClick={tossCoin}
+                  disabled={1 > Number(inputBalance)}
+                  className="bg-blue-700 hover:bg-blue-800 text-white rounded-lg"
+                >
+                  Toss
+                </Button>
+              </div>
+            </CardContent>
+          </Card> */}
+        </>
+      )}
     </div>
   );
 };

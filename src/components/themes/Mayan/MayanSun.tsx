@@ -28,7 +28,7 @@ const MayanSun = () => {
   const setBalance = context?.setBalance;
   const address = context?.address;
 
-  const flipCoin = async () => {
+  const tossCoin = async () => {
     setIsFlipping(true);
     setIsLoading(true);
 
@@ -136,7 +136,7 @@ const MayanSun = () => {
             <img src={coin} className="rounded-full" alt="" />
           </div>
           <button
-            onClick={flipCoin}
+            onClick={tossCoin}
             disabled={isFlipping}
             className="bg-yellow-800 hover:bg-yellow-900 text-white px-6 py-3 rounded-lg"
           >
