@@ -33,7 +33,10 @@ const ShintoModal = ({
           {data.level}
         </DialogTitle>
         <h5 className="mb-3">{data.meaning}</h5>
-        <DialogDescription className="mb-1">{data.advice}</DialogDescription>
+        <DialogDescription className="mb-1">
+          <b className="text-black">{Math.random() < 0.5 ? "Yes" : "No"},</b>{" "}
+          {data.advice}
+        </DialogDescription>
         <div className="flex items-center gap-1 mt-2">
           <Label htmlFor="name">Your transaction hash:</Label>
           <div className="mt-0">

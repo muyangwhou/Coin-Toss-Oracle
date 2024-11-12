@@ -25,7 +25,7 @@ const MayanSun = () => {
 
   const context = useContext(MyBalanceContext);
   const chainId = context?.chainId;
-  const setBalance = context?.setBalance;
+  const setDopuBalance = context?.setDopuBalance;
   const address = context?.address;
 
   const tossCoin = async () => {
@@ -60,17 +60,19 @@ const MayanSun = () => {
         setFormattedTransactionHash(formattedTransaction!);
         setTransactionHash(txs.transactionHash);
 
-        const balance = await tokenContract.methods.balanceOf(address).call();
+        const dopuBalance = await tokenContract.methods
+          .balanceOf(address)
+          .call();
         const getDecimals: number = await tokenContract.methods
           .decimals()
           .call();
 
         const decimals = Number(getDecimals);
         const formattedBalance = Number(
-          Number(Number(balance) / Math.pow(10, decimals)).toFixed(2)
+          Number(Number(dopuBalance) / Math.pow(10, decimals)).toFixed(2)
         );
 
-        setBalance!(formattedBalance.toString());
+        setDopuBalance!(formattedBalance.toString());
         /*  const currentHour = new Date().getHours();
         const randomIndex = Math.floor(Math.random() * mayanSigns.length);
         const timeEnergy = currentHour < 12 ? "growing" : "diminishing";

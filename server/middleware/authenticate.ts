@@ -2,11 +2,15 @@ import { NextFunction, Request, Response } from "express";
 import prisma from "../utils/prisma";
 import { verify } from "jsonwebtoken";
 
-const secret = process.env.JWT_SECRET || "test secret";
+const secret = process.env.JWT_ACCESS_SECRET_KEY || "test secret";
 
 const publicRoutes = ["/api/token", "/api/leaderboard"];
 
-export const authenticateMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+export const authenticateMiddleware = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   // Get the token from the Authorization header
   const { baseUrl } = req;
 

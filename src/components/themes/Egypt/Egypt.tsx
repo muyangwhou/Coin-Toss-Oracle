@@ -20,6 +20,7 @@ const Egypt = () => {
   const [rotations, setRotations] = useState(0);
   const [transactionHash, setTransactionHash] = useState<string>("");
   const [inputBalance, setInputBalance] = useState<string>("");
+  const [inputWish, setInputWish] = useState<string>("");
   const [formattedTransactionHash, setFormattedTransactionHash] =
     useState<string>("");
   const [isDialog, setIsDialog] = useState<boolean>(false);
@@ -27,7 +28,7 @@ const Egypt = () => {
 
   const context = useContext(MyBalanceContext);
   const chainId = context?.chainId;
-  const setBalance = context?.setBalance;
+  const setDopuBalance = context?.setDopuBalance;
   const setXdcBalance = context?.setXdcBalance;
   const address = context?.address;
 
@@ -97,16 +98,18 @@ const Egypt = () => {
         setFormattedTransactionHash(formattedTransaction!);
         setTransactionHash(txs.transactionHash);
 
-        const balance = await tokenContract.methods.balanceOf(address).call();
+        const dopuBalance = await tokenContract.methods
+          .balanceOf(address)
+          .call();
         const getDecimals: number = await tokenContract.methods
           .decimals()
           .call();
 
         const decimals = Number(getDecimals);
         const formattedBalance = Number(
-          Number(Number(balance) / Math.pow(10, decimals)).toFixed(2)
+          Number(Number(dopuBalance) / Math.pow(10, decimals)).toFixed(2)
         );
-        setBalance!(formattedBalance.toString());
+        setDopuBalance!(formattedBalance.toString());
         const outcome = outcomes[Math.floor(Math.random() * outcomes.length)];
         setOutcomeResult(outcome);
         setIsFlipping(true);
@@ -128,12 +131,14 @@ const Egypt = () => {
         console.log("Error occurred in approve transaction:", error);
         setIsLoading(false);
         setInputBalance("");
+        setInputWish("");
         setCurrency("xdc");
         toast.error(error.message);
       }
     } finally {
       setIsLoading(false);
       setInputBalance("");
+      setInputWish("");
       setCurrency("xdc");
     }
   };
@@ -151,6 +156,7 @@ const Egypt = () => {
     if (isDialog === false) {
       setOutcomeResult(undefined);
       setInputBalance("");
+      setInputWish("");
       setCurrency("xdc");
     }
   }, [isDialog]);
@@ -199,46 +205,10 @@ const Egypt = () => {
             setCurrency={setCurrency}
             currency={currency}
             tossCoin={tossCoin}
+            inputWish={inputWish}
+            setInputWish={setInputWish}
             title="Ma'at's Guidance"
           />
-          {/* <Card className="w-[350px] bg-slate-50">
-            <CardHeader className="text-center border-b border-slate-200 p-4">
-              <CardTitle className="text-lg">Ma'at's Guidance</CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="flex flex-col space-y-1.5 mb-5">
-                <Label htmlFor="balance">Enter balance (DOPU Token):</Label>
-                <div className="flex w-full items-center space-x-2 relative">
-                  <Input
-                    type="text"
-                    id="balance"
-                    required
-                    pattern="[0-9]*"
-                    inputMode="numeric"
-                    name="balance"
-                    className="relative"
-                    value={inputBalance}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (/^\d*$/.test(value)) {
-                        setInputBalance(value);
-                      }
-                    }}
-                    placeholder="Enter balance"
-                  />
-                </div>
-              </div>
-              <div className="flex flex-col items-center gap-6">
-                <Button
-                  onClick={tossCoin}
-                  disabled={1 > Number(inputBalance)}
-                  className="bg-amber-400 text-white rounded-lg hover:bg-amber-500 disabled:opacity-50 transition-colors"
-                >
-                  Toss
-                </Button>
-              </div>
-            </CardContent>
-          </Card> */}
         </>
       )}
     </div>

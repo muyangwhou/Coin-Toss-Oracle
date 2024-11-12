@@ -133,7 +133,7 @@ const DropdownMenuDemo = () => {
 
 const Connect = () => {
   const context = useContext(MyBalanceContext);
-  const balance = context?.balance;
+  const dopuBalance = context?.dopuBalance;
   const address = context?.address;
   const xdcBalance = context?.xdcBalance;
   const gamaSymbol = context?.gamaSymbol;
@@ -144,7 +144,7 @@ const Connect = () => {
   const injectedConnector = context?.injectedConnector;
 
   const formatter = new Intl.NumberFormat("en-US");
-  const formattedBalance = formatter.format(Number(balance));
+  const formattedBalance = formatter.format(Number(dopuBalance));
   const formattedXdcBalance = formatter.format(Number(xdcBalance));
   const apiCalledRef = useRef(false);
 
@@ -154,8 +154,9 @@ const Connect = () => {
         walletAddress: address!,
         chainId: chainId!,
       });
-      console.log("sendPayload", sendPayload);
-
+      if (sendPayload.token) {
+        localStorage.setItem("walletToken", JSON.stringify(sendPayload.token));
+      }
       apiCalledRef.current = true;
     } catch (error) {
       console.error("API call error:", error);

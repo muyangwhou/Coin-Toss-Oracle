@@ -41,7 +41,6 @@ const fetcher = async (
   try {
     const response = await fetch(URL, params);
     const responseData = await response.json();
-    console.log("responseData", responseData);
     return responseData?.data || responseData?.status;
   } catch (error) {
     console.log("error", error);

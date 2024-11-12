@@ -14,8 +14,8 @@ declare type LayoutType = {
 };
 
 type MyBalanceContextType = {
-  balance: string;
-  setBalance: React.Dispatch<React.SetStateAction<string>>;
+  dopuBalance: string;
+  setDopuBalance: React.Dispatch<React.SetStateAction<string>>;
   xdcBalance?: string;
   setXdcBalance?: React.Dispatch<React.SetStateAction<string>>;
   gamaSymbol: string;
@@ -39,7 +39,7 @@ export const MyBalanceContext = createContext<MyBalanceContextType | null>(
   null
 );
 function BalanceContext({ children }: LayoutType) {
-  const [balance, setBalance] = useState<string>("0");
+  const [dopuBalance, setDopuBalance] = useState<string>("0");
   const [xdcBalance, setXdcBalance] = useState<string>("0");
   const [gamaSymbol, setGamaSymbol] = useState<string>("");
   const { address, isConnected } = useAccount();
@@ -68,15 +68,15 @@ function BalanceContext({ children }: LayoutType) {
       const symbol: string = await tokenContract.methods.symbol().call();
       setGamaSymbol(symbol);
 
-      const balance = await tokenContract.methods.balanceOf(address).call();
+      const dopuBalance = await tokenContract.methods.balanceOf(address).call();
 
       const getDecimals: number = await tokenContract.methods.decimals().call();
       const decimals = Number(getDecimals);
 
       const formattedBalance = Number(
-        Number(Number(balance) / Math.pow(10, decimals)).toFixed(2)
+        Number(Number(dopuBalance) / Math.pow(10, decimals)).toFixed(2)
       );
-      setBalance(formattedBalance.toString());
+      setDopuBalance(formattedBalance.toString());
 
       const xdcTokenContract = await web3.eth.getBalance(address);
 
@@ -85,7 +85,7 @@ function BalanceContext({ children }: LayoutType) {
       );
       setXdcBalance(formattedXdcBalance.toString());
     } catch (error) {
-      console.error("Error fetching Gama balance:", error);
+      console.error("Error fetching Gama dopuBalance:", error);
     }
   };
 
@@ -106,8 +106,8 @@ function BalanceContext({ children }: LayoutType) {
   return (
     <MyBalanceContext.Provider
       value={{
-        balance,
-        setBalance,
+        dopuBalance,
+        setDopuBalance,
         xdcBalance,
         setXdcBalance,
         gamaSymbol,

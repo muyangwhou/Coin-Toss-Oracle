@@ -32,6 +32,7 @@ const RomanModal = ({
           {data.category}
         </DialogTitle>
         <DialogDescription className="mb-1">
+          <b className="text-black">{Math.random() < 0.5 ? "Yes" : "No"},</b>{" "}
           {data.prediction}
         </DialogDescription>
         <div className="flex items-center gap-1 mt-2">

@@ -13,6 +13,8 @@ interface Props {
   currency: string;
   tossCoin: () => Promise<void>;
   title: string;
+  inputWish: string;
+  setInputWish: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const CardForm: React.FC<Props> = ({
@@ -22,9 +24,11 @@ const CardForm: React.FC<Props> = ({
   currency,
   tossCoin,
   title,
+  inputWish,
+  setInputWish,
 }) => {
   const context = useContext(MyBalanceContext);
-  const balance = context?.balance;
+  const dopuBalance = context?.dopuBalance;
   const xdcBalance = context?.xdcBalance;
 
   return (
@@ -33,8 +37,8 @@ const CardForm: React.FC<Props> = ({
         <CardTitle className="text-lg">{title}</CardTitle>
       </CardHeader>
       <CardContent className="p-6">
-        <div className="flex flex-col space-y-1.5 mb-5">
-          <div className="mb-3">
+        <div className="flex flex-col space-y-2 mb-5">
+          <div>
             <Label htmlFor="xdc">Select Currency:</Label>
             <RadioGroup
               onValueChange={(e) => {
@@ -61,36 +65,59 @@ const CardForm: React.FC<Props> = ({
               </div>
             </RadioGroup>
           </div>
-          <Label htmlFor="balance">Enter balance (DOPU Token):</Label>
-          <div className="flex w-full items-center space-x-2 relative">
-            <Input
-              type="text"
-              id="balance"
-              required
-              pattern="[0-9]*"
-              inputMode="numeric"
-              name="balance"
-              className="relative"
-              value={inputBalance}
-              onChange={(e) => {
-                const value = e.target.value;
-                if (/^\d*$/.test(value)) {
-                  setInputBalance(value);
-                }
-              }}
-              placeholder="Enter balance"
-            />
+          <div>
+            <Label htmlFor="wish">Enter wish:</Label>
+            <div className="flex w-full max-w-sm items-center space-x-2 relative">
+              <Input
+                type="text"
+                required
+                name="wish"
+                id="wish"
+                className="relative"
+                autoComplete="off"
+                value={inputWish}
+                onChange={(e) => {
+                  setInputWish(e.target.value);
+                }}
+                placeholder="Enter your wish"
+              />
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="balance">
+              Enter balance ({currency.toUpperCase()} Token):
+            </Label>
+            <div className="flex w-full items-center space-x-2 relative">
+              <Input
+                type="text"
+                id="balance"
+                required
+                pattern="[0-9]*"
+                inputMode="numeric"
+                name="balance"
+                className="relative"
+                value={inputBalance}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (/^\d*$/.test(value)) {
+                    setInputBalance(value);
+                  }
+                }}
+                placeholder="Enter balance"
+              />
+            </div>
           </div>
         </div>
         <div className="flex flex-col items-center gap-6">
           <Button
             onClick={tossCoin}
             disabled={
-              currency === "xdc"
+              inputWish === "" ||
+              (currency === "xdc"
                 ? Number(inputBalance)! > Number(parseFloat(xdcBalance!)) ||
                   1 > Number(inputBalance)
-                : Number(inputBalance)! > Number(parseFloat(balance!)) ||
-                  1 > Number(inputBalance)
+                : Number(inputBalance)! > Number(parseFloat(dopuBalance!)) ||
+                  1 > Number(inputBalance))
             }
           >
             Toss

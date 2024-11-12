@@ -39,9 +39,9 @@ const Chinese = () => {
 
   const context = useContext(MyBalanceContext);
   const chainId = context?.chainId;
-  const setBalance = context?.setBalance;
+  const setDopuBalance = context?.setDopuBalance;
   const address = context?.address;
-  const balance = context?.balance;
+  const dopuBalance = context?.dopuBalance;
   const xdcBalance = context?.xdcBalance;
   const setXdcBalance = context?.setXdcBalance;
 
@@ -103,15 +103,17 @@ const Chinese = () => {
         setTransactionHash(txs.transactionHash);
         setGameScreen(true);
 
-        const balance = await tokenContract.methods.balanceOf(address).call();
+        const dopuBalance = await tokenContract.methods
+          .balanceOf(address)
+          .call();
         const getDecimals: number = await tokenContract.methods
           .decimals()
           .call();
         const decimals = Number(getDecimals);
         const formattedBalance = Number(
-          Number(Number(balance) / Math.pow(10, decimals)).toFixed(2)
+          Number(Number(dopuBalance) / Math.pow(10, decimals)).toFixed(2)
         );
-        setBalance!(formattedBalance.toString());
+        setDopuBalance!(formattedBalance.toString());
       });
   };
 
@@ -351,7 +353,9 @@ const Chinese = () => {
                   </div>
                 </div>
                 <div className="flex flex-col space-y-1.5 mb-4">
-                  <Label htmlFor="balance">Enter balance (DOPU Token):</Label>
+                  <Label htmlFor="balance">
+                    Enter balance ({currency.toUpperCase()} Token):
+                  </Label>
                   <div className="flex w-full max-w-sm items-center space-x-2 relative">
                     <Input
                       type="text"
@@ -380,7 +384,7 @@ const Chinese = () => {
                             Number(parseFloat(xdcBalance!)) ||
                           1 > Number(inputBalance)
                         : Number(inputBalance)! >
-                            Number(parseFloat(balance!)) ||
+                            Number(parseFloat(dopuBalance!)) ||
                           1 > Number(inputBalance)
                     }
                     type="submit"

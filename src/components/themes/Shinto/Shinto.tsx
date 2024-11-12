@@ -18,6 +18,7 @@ const Shinto = () => {
   const [rotations, setRotations] = useState(0);
   const [transactionHash, setTransactionHash] = useState<string>("");
   const [inputBalance, setInputBalance] = useState<string>("");
+  const [inputWish, setInputWish] = useState<string>("");
   const [formattedTransactionHash, setFormattedTransactionHash] =
     useState<string>("");
   const [isDialog, setIsDialog] = useState<boolean>(false);
@@ -25,7 +26,7 @@ const Shinto = () => {
 
   const context = useContext(MyBalanceContext);
   const chainId = context?.chainId;
-  const setBalance = context?.setBalance;
+  const setDopuBalance = context?.setDopuBalance;
   const setXdcBalance = context?.setXdcBalance;
   const address = context?.address;
 
@@ -95,15 +96,17 @@ const Shinto = () => {
         const formattedTransaction = formatTransaction(txs.transactionHash);
         setFormattedTransactionHash(formattedTransaction!);
         setTransactionHash(txs.transactionHash);
-        const balance = await tokenContract.methods.balanceOf(address).call();
+        const dopuBalance = await tokenContract.methods
+          .balanceOf(address)
+          .call();
         const getDecimals: number = await tokenContract.methods
           .decimals()
           .call();
         const decimals = Number(getDecimals);
         const formattedBalance = Number(
-          Number(Number(balance) / Math.pow(10, decimals)).toFixed(2)
+          Number(Number(dopuBalance) / Math.pow(10, decimals)).toFixed(2)
         );
-        setBalance!(formattedBalance.toString());
+        setDopuBalance!(formattedBalance.toString());
         const randomFortune =
           fortunes[Math.floor(Math.random() * fortunes.length)];
         setFortune(randomFortune);
@@ -130,6 +133,7 @@ const Shinto = () => {
         console.log("Error occurred in approve transaction:", error);
         setIsLoading(false);
         setInputBalance("");
+        setInputWish("");
         setCurrency("xdc");
         // setIsFlipping(false);
         toast.error(error.message);
@@ -138,6 +142,7 @@ const Shinto = () => {
       setIsLoading(false);
       setCurrency("xdc");
       setInputBalance("");
+      setInputWish("");
     }
   };
 
@@ -154,6 +159,7 @@ const Shinto = () => {
     if (isDialog === false) {
       setFortune(undefined);
       setInputBalance("");
+      setInputWish("");
       setCurrency("xdc");
     }
   }, [isDialog]);
@@ -191,6 +197,8 @@ const Shinto = () => {
             setCurrency={setCurrency}
             currency={currency}
             tossCoin={tossCoin}
+            inputWish={inputWish}
+            setInputWish={setInputWish}
             title="Shinto Omikuji Fortune"
           />
           {/* <Card className="w-[350px] bg-slate-50">

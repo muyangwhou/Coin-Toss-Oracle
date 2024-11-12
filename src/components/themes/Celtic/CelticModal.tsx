@@ -35,7 +35,10 @@ const CelticModal = ({
         <h5 className="mb-3" style={{ fontSize: "24px", fontWeight: "700" }}>
           {data.symbol}
         </h5>
-        <DialogDescription className="mb-1">{data.meaning}</DialogDescription>
+        <DialogDescription className="mb-1">
+          <b className="text-black">{Math.random() < 0.5 ? "Yes" : "No"},</b>{" "}
+          {data.meaning}
+        </DialogDescription>
         <div className="flex items-center gap-1 mt-2">
           <Label htmlFor="name">Your transaction hash:</Label>
           <div className="mt-0">

@@ -4,6 +4,7 @@ import prisma from "../utils/prisma";
 import Web3, { WebSocketProvider } from "web3";
 import { xrc20ABI } from "../utils/xrc20Abi";
 import { errorHandler, responseHandler } from "../utils/reshelper";
+import { getAccessToken } from "../utils/generateAccessToken";
 
 export const generateWalletAddressToken = CatchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -37,15 +38,21 @@ export const generateWalletAddressToken = CatchAsync(
         testnetContractAddress
       );
 
-      const balance = await tokenContract.methods
+      const dopuBalance = await tokenContract.methods
         .balanceOf(payload.walletAddress)
         .call();
 
       const getDecimals: number = await tokenContract.methods.decimals().call();
       const decimals = Number(getDecimals);
 
-      const formattedBalance = Number(
-        Number(Number(balance) / Math.pow(10, decimals)).toFixed(2)
+      const formattedDopuBalance = Number(
+        Number(Number(dopuBalance) / Math.pow(10, decimals)).toFixed(2)
+      );
+
+      const xdcTokenContract = await web3.eth.getBalance(payload.walletAddress);
+
+      const formattedXdcBalance = Number(
+        Number(Number(xdcTokenContract) / Math.pow(10, decimals)).toFixed(2)
       );
 
       if (!walletExist) {
@@ -56,39 +63,42 @@ export const generateWalletAddressToken = CatchAsync(
             dailyTossCount: 0,
             totalTossCount: 0,
             streak: 0,
-            tokenBalance: formattedBalance,
+            dopuBalance: formattedDopuBalance,
+            xdcBalance: formattedXdcBalance,
             chainId: payload.chainId,
+          },
+        });
+
+        const tokenPayload = {
+          id: walletDetails.id,
+        };
+
+        const accessToken = getAccessToken(tokenPayload);
+
+        responseHandler(res, "Token generated successfully.", true, 200, {
+          token: accessToken,
+        });
+      } else {
+        const walletDetails = await prisma.wallet.findUnique({
+          where: {
+            walletAddress_chainId: {
+              walletAddress: processedAddress,
+              chainId: payload.chainId,
+            },
+          },
+          include: {
+            tosses: true,
+            leaderboard: true,
           },
         });
         responseHandler(
           res,
-          "Wallet created successfully.",
+          "Wallet connected successfully.",
           true,
-          201,
+          200,
           walletDetails!
         );
       }
-
-      const walletDetails = await prisma.wallet.findUnique({
-        where: {
-          walletAddress_chainId: {
-            walletAddress: processedAddress,
-            chainId: payload.chainId,
-          },
-        },
-        include: {
-          tosses: true,
-          Leaderboard: true,
-        },
-      });
-
-      responseHandler(
-        res,
-        "Wallet connected successfully.",
-        true,
-        200,
-        walletDetails!
-      );
     } catch (error) {
       console.log("error", error);
       errorHandler(res, "Wallet not connected!", false, 404);

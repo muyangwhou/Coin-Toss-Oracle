@@ -21,9 +21,10 @@ model Wallet {
   totalTossCount Int
   lastTossDate   DateTime?
   streak         Int
-  tokenBalance   Float
+  xdcBalance   Float
+  dopuBalance   Float
   tosses         TossLog[]
-  Leaderboard    Leaderboard[]
+  leaderboard    Leaderboard[]
 
   @@unique([walletAddress, chainId]) // Composite unique constraint
 }
