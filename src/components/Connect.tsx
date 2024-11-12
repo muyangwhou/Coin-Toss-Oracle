@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useState } from "react";
 import { BsCopy } from "react-icons/bs";
 import {
   Tooltip,
@@ -19,7 +19,7 @@ import {
 import { FaUser, FaWallet } from "react-icons/fa";
 import { MyBalanceContext } from "./BalanceContext";
 import { xdc, xdcTestnet } from "viem/chains";
-import { api } from "@/utils/api";
+// import { api } from "@/utils/api";
 
 const DropdownMenuDemo = () => {
   const [toolTip, setToolTip] = useState("Copy To Clipboard");
@@ -134,7 +134,7 @@ const DropdownMenuDemo = () => {
 const Connect = () => {
   const context = useContext(MyBalanceContext);
   const dopuBalance = context?.dopuBalance;
-  const address = context?.address;
+  // const address = context?.address;
   const xdcBalance = context?.xdcBalance;
   const gamaSymbol = context?.gamaSymbol;
   const isConnected = context?.isConnected;
