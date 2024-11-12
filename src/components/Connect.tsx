@@ -146,9 +146,9 @@ const Connect = () => {
   const formatter = new Intl.NumberFormat("en-US");
   const formattedBalance = formatter.format(Number(dopuBalance));
   const formattedXdcBalance = formatter.format(Number(xdcBalance));
-  const apiCalledRef = useRef(false);
+  // const apiCalledRef = useRef(false);
 
-  const fetchData = async () => {
+  /* const fetchData = async () => {
     try {
       const sendPayload = await api.generateWalletToken({
         walletAddress: address!,
@@ -161,13 +161,13 @@ const Connect = () => {
     } catch (error) {
       console.error("API call error:", error);
     }
-  };
+  }; */
 
-  useEffect(() => {
+  /* useEffect(() => {
     if (isConnected && !apiCalledRef.current) {
       fetchData();
     }
-  }, [isConnected, address, chainId]);
+  }, [isConnected, address, chainId]); */
 
   if (isConnected) {
     return (
@@ -186,7 +186,7 @@ const Connect = () => {
       </div>
     );
   } else {
-    apiCalledRef.current = false;
+    // apiCalledRef.current = false;
     return (
       <button
         disabled={!connected}
