@@ -5,16 +5,15 @@ import toast from "react-hot-toast";
 import { formatTransaction } from "@/utils/formatTransactionHash";
 import { xrc20ABI } from "@/utils/XRC20ABI";
 import Web3 from "web3";
-import { fortunaPredictions } from "./fortunePrediction";
-import RomanModal from "./RomanModal";
-import frontSideCoin from "../../../assets/images/fortunaCoin.avif";
+import IslamicModal from "./IslamicModal";
 import CardForm from "@/utils/CardForm";
 import { api } from "@/utils/api";
+import { FaStarAndCrescent } from "react-icons/fa";
 
-const Roman = () => {
+const Islamic = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [prediction, setPrediction] = useState<string>("");
-  const [category, setCategory] = useState<string>("");
+  const [title, setTitle] = useState<string>("");
   const [inputBalance, setInputBalance] = useState<string>("");
   const [inputWish, setInputWish] = useState<string>("");
   const [isFlipping, setIsFlipping] = useState(false);
@@ -64,15 +63,13 @@ const Roman = () => {
     );
     setXdcBalance!(formattedXdcBalance.toString());
 
-    const categories = Object.keys(fortunaPredictions);
-    const category = categories[Math.floor(Math.random() * categories.length)];
-    setCategory(category);
+    const result =
+      Math.random() < 0.5
+        ? "In sha Allah (If Allah wills)"
+        : "Allahu A'lam (Allah knows best)";
 
-    const predictions =
-      fortunaPredictions[category as keyof typeof fortunaPredictions];
-
-    const result = predictions[Math.floor(Math.random() * predictions.length)];
-
+    const title = Math.random() < 0.5 ? "إن شاء الله" : "الله أعلم";
+    setTitle(title);
     setPrediction(result);
     setIsFlipping(true);
     setIsLoading(false);
@@ -83,7 +80,7 @@ const Roman = () => {
           transactionHash: txResponse.transactionHash as string,
           chainId: chainId!,
           currency: currency.toUpperCase(),
-          theme: "Roman",
+          theme: "Islamic",
         });
         console.log("sendPayload", sendPayload);
       } catch (error) {
@@ -122,16 +119,14 @@ const Roman = () => {
           Number(Number(dopuBalance) / Math.pow(10, decimals)).toFixed(2)
         );
         setDopuBalance!(formattedBalance.toString());
-        const categories = Object.keys(fortunaPredictions);
-        const category =
-          categories[Math.floor(Math.random() * categories.length)];
-        setCategory(category);
-
-        const predictions =
-          fortunaPredictions[category as keyof typeof fortunaPredictions];
 
         const result =
-          predictions[Math.floor(Math.random() * predictions.length)];
+          Math.random() < 0.5
+            ? "In sha Allah (If Allah wills)"
+            : "Allahu A'lam (Allah knows best)";
+
+        const title = Math.random() < 0.5 ? "إن شاء الله" : "الله أعلم";
+        setTitle(title);
 
         setPrediction(result);
         setIsFlipping(true);
@@ -142,7 +137,7 @@ const Roman = () => {
               transactionHash: txs.transactionHash,
               chainId: chainId!,
               currency: currency.toUpperCase(),
-              theme: "Roman",
+              theme: "Islamic",
             });
             console.log("sendPayload", sendPayload);
           } catch (error) {
@@ -167,12 +162,14 @@ const Roman = () => {
         setInputBalance("");
         setInputWish("");
         setCurrency("xdc");
+        setTitle("");
         toast.error(error.message);
       }
     } finally {
       setIsLoading(false);
       setInputBalance("");
       setInputWish("");
+      setTitle("");
       setCurrency("xdc");
     }
   };
@@ -189,9 +186,9 @@ const Roman = () => {
   useEffect(() => {
     if (isDialog === false) {
       setPrediction("");
-      setCategory("");
       setInputBalance("");
       setInputWish("");
+      setTitle("");
       setCurrency("xdc");
     }
   }, [isDialog]);
@@ -199,10 +196,10 @@ const Roman = () => {
   return (
     <div className="flex-grow flex flex-col justify-center items-center">
       {isDialog && (
-        <RomanModal
+        <IslamicModal
           showModal={isDialog}
           setShowModal={setIsDialog}
-          data={{ prediction, category }}
+          data={{ title, prediction }}
           transactionHash={transactionHash}
           formattedTransactionHash={formattedTransactionHash}
           chainId={chainId!}
@@ -222,11 +219,24 @@ const Roman = () => {
               isFlipping ? "coin-flip" : ""
             }`}
           >
-            <div className="absolute w-full h-full rounded-full flex items-center justify-center [backface-visibility:hidden]">
-              <img src={frontSideCoin} className="rounded-full" alt="" />
+            <div
+              className="absolute w-full h-full rounded-full border-4 flex items-center justify-center [backface-visibility:hidden]"
+              style={{
+                backgroundColor: "#FDD20EFF",
+                borderColor: "#2C5F2D",
+              }}
+            >
+              <FaStarAndCrescent size={40} color="#2C5F2D" />
             </div>
-            <div className="absolute w-full h-full rounded-full flex items-center justify-center [transform:rotateY(180deg)] [backface-visibility:hidden]">
-              <img src={frontSideCoin} className="rounded-full" alt="" />
+            <div
+              className="absolute w-full h-full rounded-full border-4 flex items-center justify-center [transform:rotateY(180deg)] [backface-visibility:hidden]"
+              style={{
+                backgroundColor: "#2C5F2D",
+                color: "#FDD20EFF",
+                borderColor: "#FDD20EFF",
+              }}
+            >
+              <span className="text-l">إن شاء الله</span>
             </div>
           </div>
         </div>
@@ -240,7 +250,7 @@ const Roman = () => {
             tossCoin={tossCoin}
             inputWish={inputWish}
             setInputWish={setInputWish}
-            title="Fortuna's Oracle"
+            title="Islamic Taqdir Fortune"
           />
         </>
       )}
@@ -248,4 +258,4 @@ const Roman = () => {
   );
 };
 
-export default Roman;
+export default Islamic;

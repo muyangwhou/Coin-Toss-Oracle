@@ -1,23 +1,23 @@
 import { useContext, useEffect, useState } from "react";
-import { FourSquare } from "react-loading-indicators";
 import { MyBalanceContext } from "@/components/BalanceContext";
-import toast from "react-hot-toast";
-import { formatTransaction } from "@/utils/formatTransactionHash";
+import { FourSquare } from "react-loading-indicators";
 import { xrc20ABI } from "@/utils/XRC20ABI";
 import Web3 from "web3";
-import { fortunaPredictions } from "./fortunePrediction";
-import RomanModal from "./RomanModal";
-import frontSideCoin from "../../../assets/images/fortunaCoin.avif";
+import toast from "react-hot-toast";
+import { formatTransaction } from "@/utils/formatTransactionHash";
 import CardForm from "@/utils/CardForm";
 import { api } from "@/utils/api";
+import { christianFortune } from "./christianFortune";
+import { ChristianDto } from "@/utils/types";
+import ChristianModal from "./ChristainModal";
+import { FaCross, FaCrown } from "react-icons/fa";
 
-const Roman = () => {
+const Christian = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [prediction, setPrediction] = useState<string>("");
-  const [category, setCategory] = useState<string>("");
+  const [isFlipping, setIsFlipping] = useState(false);
+  const [result, setResult] = useState<ChristianDto>();
   const [inputBalance, setInputBalance] = useState<string>("");
   const [inputWish, setInputWish] = useState<string>("");
-  const [isFlipping, setIsFlipping] = useState(false);
   const [transactionHash, setTransactionHash] = useState<string>("");
   const [formattedTransactionHash, setFormattedTransactionHash] =
     useState<string>("");
@@ -64,16 +64,20 @@ const Roman = () => {
     );
     setXdcBalance!(formattedXdcBalance.toString());
 
-    const categories = Object.keys(fortunaPredictions);
-    const category = categories[Math.floor(Math.random() * categories.length)];
-    setCategory(category);
+    const newSide = Math.random() < 0.5 ? "cross" : "crown";
 
-    const predictions =
-      fortunaPredictions[category as keyof typeof fortunaPredictions];
+    const categories =
+      newSide === "cross"
+        ? (["faith", "hope"] as const)
+        : (["victory", "love"] as const);
 
-    const result = predictions[Math.floor(Math.random() * predictions.length)];
+    const categoryIndex = Math.floor(Math.random() * categories.length);
+    const category = categories[categoryIndex];
 
-    setPrediction(result);
+    const possibleResponses = christianFortune[newSide][category];
+    const responseIndex = Math.floor(Math.random() * possibleResponses.length);
+    const response = possibleResponses[responseIndex];
+    setResult({ category, response });
     setIsFlipping(true);
     setIsLoading(false);
 
@@ -83,7 +87,7 @@ const Roman = () => {
           transactionHash: txResponse.transactionHash as string,
           chainId: chainId!,
           currency: currency.toUpperCase(),
-          theme: "Roman",
+          theme: "Christian",
         });
         console.log("sendPayload", sendPayload);
       } catch (error) {
@@ -121,19 +125,25 @@ const Roman = () => {
         const formattedBalance = Number(
           Number(Number(dopuBalance) / Math.pow(10, decimals)).toFixed(2)
         );
+
         setDopuBalance!(formattedBalance.toString());
-        const categories = Object.keys(fortunaPredictions);
-        const category =
-          categories[Math.floor(Math.random() * categories.length)];
-        setCategory(category);
 
-        const predictions =
-          fortunaPredictions[category as keyof typeof fortunaPredictions];
+        const newSide = Math.random() < 0.5 ? "cross" : "crown";
 
-        const result =
-          predictions[Math.floor(Math.random() * predictions.length)];
+        const categories =
+          newSide === "cross"
+            ? (["faith", "hope"] as const)
+            : (["victory", "love"] as const);
 
-        setPrediction(result);
+        const categoryIndex = Math.floor(Math.random() * categories.length);
+        const category = categories[categoryIndex];
+
+        const possibleResponses = christianFortune[newSide][category];
+        const responseIndex = Math.floor(
+          Math.random() * possibleResponses.length
+        );
+        const response = possibleResponses[responseIndex];
+        setResult({ category, response });
         setIsFlipping(true);
 
         if (txs) {
@@ -142,7 +152,7 @@ const Roman = () => {
               transactionHash: txs.transactionHash,
               chainId: chainId!,
               currency: currency.toUpperCase(),
-              theme: "Roman",
+              theme: "Christian",
             });
             console.log("sendPayload", sendPayload);
           } catch (error) {
@@ -171,9 +181,9 @@ const Roman = () => {
       }
     } finally {
       setIsLoading(false);
+      setCurrency("xdc");
       setInputBalance("");
       setInputWish("");
-      setCurrency("xdc");
     }
   };
 
@@ -188,8 +198,7 @@ const Roman = () => {
 
   useEffect(() => {
     if (isDialog === false) {
-      setPrediction("");
-      setCategory("");
+      setResult(undefined);
       setInputBalance("");
       setInputWish("");
       setCurrency("xdc");
@@ -197,12 +206,12 @@ const Roman = () => {
   }, [isDialog]);
 
   return (
-    <div className="flex-grow flex flex-col justify-center items-center">
+    <div className={`flex-grow flex flex-col justify-center items-center`}>
       {isDialog && (
-        <RomanModal
+        <ChristianModal
           showModal={isDialog}
           setShowModal={setIsDialog}
-          data={{ prediction, category }}
+          data={result!}
           transactionHash={transactionHash}
           formattedTransactionHash={formattedTransactionHash}
           chainId={chainId!}
@@ -222,11 +231,23 @@ const Roman = () => {
               isFlipping ? "coin-flip" : ""
             }`}
           >
-            <div className="absolute w-full h-full rounded-full flex items-center justify-center [backface-visibility:hidden]">
-              <img src={frontSideCoin} className="rounded-full" alt="" />
+            <div
+              className="absolute w-full h-full rounded-full border-4 flex items-center justify-center [backface-visibility:hidden]"
+              style={{
+                backgroundColor: "#F93822FF",
+                borderColor: "#FDD20EFF",
+              }}
+            >
+              <FaCrown size={40} color="#FDD20EFF" />
             </div>
-            <div className="absolute w-full h-full rounded-full flex items-center justify-center [transform:rotateY(180deg)] [backface-visibility:hidden]">
-              <img src={frontSideCoin} className="rounded-full" alt="" />
+            <div
+              className="absolute w-full h-full rounded-full border-4 flex items-center justify-center [transform:rotateY(180deg)] [backface-visibility:hidden]"
+              style={{
+                backgroundColor: "#FDD20EFF",
+                borderColor: "#F93822FF",
+              }}
+            >
+              <FaCross size={35} color="#F93822FF" />
             </div>
           </div>
         </div>
@@ -240,7 +261,7 @@ const Roman = () => {
             tossCoin={tossCoin}
             inputWish={inputWish}
             setInputWish={setInputWish}
-            title="Fortuna's Oracle"
+            title="Christian Cross Oracle"
           />
         </>
       )}
@@ -248,4 +269,4 @@ const Roman = () => {
   );
 };
 
-export default Roman;
+export default Christian;

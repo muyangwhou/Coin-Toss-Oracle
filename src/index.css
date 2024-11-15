@@ -78,3 +78,16 @@
   align-items: center;
   justify-content: center;
 }
+
+.custom-table {
+text-align: center;
+}
+
+.custom-table thead tr, .custom-table thead th, .custom-table tbody tr, .custom-table tbody td {
+  padding: 0.5rem 1rem;
+  border: 1px solid #343a40;
+}
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}

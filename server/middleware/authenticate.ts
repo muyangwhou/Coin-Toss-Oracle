@@ -2,6 +2,12 @@ import { NextFunction, Request, Response } from "express";
 import prisma from "../utils/prisma";
 import { verify } from "jsonwebtoken";
 
+interface DecodedWallet {
+  id: string;
+  iat: number;
+  exp: number;
+}
+
 const secret = process.env.JWT_ACCESS_SECRET_KEY || "test secret";
 
 const publicRoutes = ["/api/token", "/api/leaderboard"];
@@ -31,14 +37,7 @@ export const authenticateMiddleware = async (
   try {
     // Verify and decode the token
     const decoded = verify(token, secret);
-
-    const decodedWallet: {
-      walletAddress: string;
-      chainId: number;
-      id: string;
-    } = JSON.parse((decoded.sub || "").toString());
-
-    // Attach the decoded token to the request object for further use
+    const decodedWallet = decoded as DecodedWallet;
 
     const wallet = await prisma.wallet.findUnique({
       where: {

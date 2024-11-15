@@ -55,15 +55,12 @@ function BalanceContext({ children }: LayoutType) {
     try {
       const web3 = new Web3(window.web3);
 
-      const testnetContractAddress =
+      const contractAddress =
         chainId === 51
           ? import.meta.env.VITE_XDC_TESTNET_CONTRACT_ADDRESS!
           : import.meta.env.VITE_XDC_MAINNET_CONTRACT_ADDRESS!;
 
-      const tokenContract = new web3.eth.Contract(
-        xrc20ABI,
-        testnetContractAddress
-      );
+      const tokenContract = new web3.eth.Contract(xrc20ABI, contractAddress);
 
       const symbol: string = await tokenContract.methods.symbol().call();
       setGamaSymbol(symbol);

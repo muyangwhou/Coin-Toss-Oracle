@@ -10,6 +10,13 @@ import Roman from "@/components/themes/Roman/Roman";
 import Account from "@/components/Account";
 import Connect from "@/components/Connect";
 import NativeAmerican from "@/components/themes/Native-American/NativeAmerican";
+import LeaderBoard from "@/components/LeaderBoard";
+import MayanSun from "@/components/themes/Mayan/MayanSun";
+import Greek from "@/components/themes/Greek/Greek";
+import Zoroastrian from "@/components/themes/Zoroastrian/Zoroastrian";
+import Christian from "@/components/themes/Christian/Christian";
+import Islamic from "@/components/themes/Islamic/Islamic";
+import Judaism from "@/components/themes/Judaism/Judaism";
 
 const Home = () => {
   const { isConnected } = useAccount();
@@ -27,6 +34,13 @@ const Home = () => {
           <Route path="african-theme" element={<African />} />
           <Route path="roman-theme" element={<Roman />} />
           <Route path="native-theme" element={<NativeAmerican />} />
+          <Route path="mayan-theme" element={<MayanSun />} />
+          <Route path="greek-theme" element={<Greek />} />
+          <Route path="zoroastrian-theme" element={<Zoroastrian />} />
+          <Route path="christian-theme" element={<Christian />} />
+          <Route path="islamic-theme" element={<Islamic />} />
+          <Route path="judaism-theme" element={<Judaism />} />
+          <Route path="leaderboard" element={<LeaderBoard />} />
         </Routes>
       ) : (
         <div className="flex-grow flex flex-col justify-center items-center">

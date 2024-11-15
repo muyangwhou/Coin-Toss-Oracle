@@ -6,10 +6,12 @@ import Web3 from "web3";
 import toast from "react-hot-toast";
 import { formatTransaction } from "@/utils/formatTransactionHash";
 import coin from "../../../assets/images/nativeAmericanCoin.jpeg";
+import backCoin from "../../../assets/images/nativeAmericanBack.png";
 import { spirits } from "./spirits";
 import { NativeAmericanDto } from "@/utils/types";
 import NativeAmericanModal from "./NativeAmericanModal";
 import CardForm from "@/utils/CardForm";
+import { api } from "@/utils/api";
 
 const NativeAmerican = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -66,30 +68,35 @@ const NativeAmerican = () => {
     const randomSpirit = spirits[Math.floor(Math.random() * spirits.length)];
     setSpirit(randomSpirit);
     setIsFlipping(true);
+    setIsLoading(false);
+
+    if (txResponse) {
+      try {
+        const sendPayload = await api.generateTossTransaction({
+          transactionHash: txResponse.transactionHash as string,
+          chainId: chainId!,
+          currency: currency.toUpperCase(),
+          theme: "Native-American",
+        });
+        console.log("sendPayload", sendPayload);
+      } catch (error) {
+        console.log(error);
+      }
+    }
   };
 
   const burnDopuBalance = async () => {
-    const testnetContractAddress =
+    const burnAddress =
       chainId === 51
         ? import.meta.env.VITE_XDC_TESTNET_CONTRACT_ADDRESS!
         : import.meta.env.VITE_XDC_MAINNET_CONTRACT_ADDRESS!;
 
-    const tokenContract = new web3.eth.Contract(
-      xrc20ABI,
-      testnetContractAddress
-    );
-
-    const valueInWei = web3.utils.toWei(inputBalance, "ether");
-
-    const testnetBurnAddress =
-      chainId === 51
-        ? import.meta.env.VITE_XDC_TESTNET_CONTRACT_ADDRESS
-        : import.meta.env.VITE_XDC_MAINNET_CONTRACT_ADDRESS;
+    const tokenContract = new web3.eth.Contract(xrc20ABI, burnAddress);
 
     const gasPrice = await web3.eth.getGasPrice();
 
     await tokenContract.methods
-      .transfer(testnetBurnAddress, valueInWei)
+      .transfer(burnAddress, valueInWei)
       .send({ from: address, gasPrice: gasPrice.toString() })
       .on("receipt", async function (txs) {
         const formattedTransaction = formatTransaction(txs.transactionHash);
@@ -113,6 +120,20 @@ const NativeAmerican = () => {
           spirits[Math.floor(Math.random() * spirits.length)];
         setSpirit(randomSpirit);
         setIsFlipping(true);
+
+        if (txs) {
+          try {
+            const sendPayload = await api.generateTossTransaction({
+              transactionHash: txs.transactionHash,
+              chainId: chainId!,
+              currency: currency.toUpperCase(),
+              theme: "Native-American",
+            });
+            console.log("sendPayload", sendPayload);
+          } catch (error) {
+            console.log(error);
+          }
+        }
       });
   };
 
@@ -189,7 +210,7 @@ const NativeAmerican = () => {
               <img src={coin} className="rounded-full" alt="" />
             </div>
             <div className="absolute w-full h-full rounded-full flex items-center justify-center [transform:rotateY(180deg)] [backface-visibility:hidden]">
-              <img src={coin} className="rounded-full" alt="" />
+              <img src={backCoin} className="rounded-full" alt="" />
             </div>
           </div>
         </div>

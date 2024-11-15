@@ -18,6 +18,7 @@ import { MyBalanceContext } from "@/components/BalanceContext";
 import toast from "react-hot-toast";
 import { formatTransaction } from "@/utils/formatTransactionHash";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { api } from "@/utils/api";
 
 const Chinese = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -73,29 +74,41 @@ const Chinese = () => {
     setFormattedTransactionHash(formattedTransaction!);
     setTransactionHash(txResponse.transactionHash as string);
     setGameScreen(true);
+    setIsLoading(false);
 
     const newBalance = await web3.eth.getBalance(address!);
     const formattedXdcBalance = Number(
       (Number(newBalance) / Math.pow(10, 18)).toFixed(2)
     );
     setXdcBalance!(formattedXdcBalance.toString());
+
+    if (txResponse) {
+      try {
+        const sendPayload = await api.generateTossTransaction({
+          transactionHash: txResponse.transactionHash as string,
+          chainId: chainId!,
+          currency: currency.toUpperCase(),
+          theme: "Ching",
+        });
+        console.log("sendPayload", sendPayload);
+      } catch (error) {
+        console.log(error);
+      }
+    }
   };
 
   const burnDopuBalance = async () => {
-    const testnetContractAddress =
+    const contractAddress =
       chainId === 51
         ? import.meta.env.VITE_XDC_TESTNET_CONTRACT_ADDRESS!
         : import.meta.env.VITE_XDC_MAINNET_CONTRACT_ADDRESS!;
 
-    const tokenContract = new web3.eth.Contract(
-      xrc20ABI,
-      testnetContractAddress
-    );
+    const tokenContract = new web3.eth.Contract(xrc20ABI, contractAddress);
 
     const gasPrice = await web3.eth.getGasPrice();
 
     await tokenContract.methods
-      .transfer(testnetContractAddress, valueInWei)
+      .transfer(contractAddress, valueInWei)
       .send({ from: address, gasPrice: gasPrice.toString() })
       .on("receipt", async function (txs) {
         const formattedTransaction = formatTransaction(txs.transactionHash);
@@ -114,6 +127,20 @@ const Chinese = () => {
           Number(Number(dopuBalance) / Math.pow(10, decimals)).toFixed(2)
         );
         setDopuBalance!(formattedBalance.toString());
+
+        if (txs) {
+          try {
+            const sendPayload = await api.generateTossTransaction({
+              transactionHash: txs.transactionHash,
+              chainId: chainId!,
+              currency: currency.toUpperCase(),
+              theme: "Ching",
+            });
+            console.log("sendPayload", sendPayload);
+          } catch (error) {
+            console.log(error);
+          }
+        }
       });
   };
 

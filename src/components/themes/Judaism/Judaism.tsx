@@ -1,24 +1,24 @@
 import { useContext, useEffect, useState } from "react";
+import { JudaismDto } from "@/utils/types";
 import { FourSquare } from "react-loading-indicators";
 import { MyBalanceContext } from "@/components/BalanceContext";
 import toast from "react-hot-toast";
 import { formatTransaction } from "@/utils/formatTransactionHash";
 import { xrc20ABI } from "@/utils/XRC20ABI";
 import Web3 from "web3";
-import { fortunaPredictions } from "./fortunePrediction";
-import RomanModal from "./RomanModal";
-import frontSideCoin from "../../../assets/images/fortunaCoin.avif";
 import CardForm from "@/utils/CardForm";
 import { api } from "@/utils/api";
+import { judaismFortunes } from "./judaismFortune";
+import JudaismModal from "./JudaismModal";
+import { PiStarOfDavidBold } from "react-icons/pi";
 
-const Roman = () => {
+const Judaism = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [prediction, setPrediction] = useState<string>("");
-  const [category, setCategory] = useState<string>("");
-  const [inputBalance, setInputBalance] = useState<string>("");
-  const [inputWish, setInputWish] = useState<string>("");
+  const [fortune, setFortune] = useState<JudaismDto>();
   const [isFlipping, setIsFlipping] = useState(false);
   const [transactionHash, setTransactionHash] = useState<string>("");
+  const [inputBalance, setInputBalance] = useState<string>("");
+  const [inputWish, setInputWish] = useState<string>("");
   const [formattedTransactionHash, setFormattedTransactionHash] =
     useState<string>("");
   const [isDialog, setIsDialog] = useState<boolean>(false);
@@ -64,16 +64,9 @@ const Roman = () => {
     );
     setXdcBalance!(formattedXdcBalance.toString());
 
-    const categories = Object.keys(fortunaPredictions);
-    const category = categories[Math.floor(Math.random() * categories.length)];
-    setCategory(category);
-
-    const predictions =
-      fortunaPredictions[category as keyof typeof fortunaPredictions];
-
-    const result = predictions[Math.floor(Math.random() * predictions.length)];
-
-    setPrediction(result);
+    const result =
+      judaismFortunes[Math.floor(Math.random() * judaismFortunes.length)];
+    setFortune(result);
     setIsFlipping(true);
     setIsLoading(false);
 
@@ -83,7 +76,7 @@ const Roman = () => {
           transactionHash: txResponse.transactionHash as string,
           chainId: chainId!,
           currency: currency.toUpperCase(),
-          theme: "Roman",
+          theme: "Judaism",
         });
         console.log("sendPayload", sendPayload);
       } catch (error) {
@@ -121,19 +114,11 @@ const Roman = () => {
         const formattedBalance = Number(
           Number(Number(dopuBalance) / Math.pow(10, decimals)).toFixed(2)
         );
-        setDopuBalance!(formattedBalance.toString());
-        const categories = Object.keys(fortunaPredictions);
-        const category =
-          categories[Math.floor(Math.random() * categories.length)];
-        setCategory(category);
-
-        const predictions =
-          fortunaPredictions[category as keyof typeof fortunaPredictions];
 
         const result =
-          predictions[Math.floor(Math.random() * predictions.length)];
-
-        setPrediction(result);
+          judaismFortunes[Math.floor(Math.random() * judaismFortunes.length)];
+        setFortune(result);
+        setDopuBalance!(formattedBalance.toString());
         setIsFlipping(true);
 
         if (txs) {
@@ -142,7 +127,7 @@ const Roman = () => {
               transactionHash: txs.transactionHash,
               chainId: chainId!,
               currency: currency.toUpperCase(),
-              theme: "Roman",
+              theme: "Judaism",
             });
             console.log("sendPayload", sendPayload);
           } catch (error) {
@@ -188,8 +173,7 @@ const Roman = () => {
 
   useEffect(() => {
     if (isDialog === false) {
-      setPrediction("");
-      setCategory("");
+      setFortune(undefined);
       setInputBalance("");
       setInputWish("");
       setCurrency("xdc");
@@ -199,10 +183,10 @@ const Roman = () => {
   return (
     <div className="flex-grow flex flex-col justify-center items-center">
       {isDialog && (
-        <RomanModal
+        <JudaismModal
           showModal={isDialog}
           setShowModal={setIsDialog}
-          data={{ prediction, category }}
+          data={fortune!}
           transactionHash={transactionHash}
           formattedTransactionHash={formattedTransactionHash}
           chainId={chainId!}
@@ -222,11 +206,24 @@ const Roman = () => {
               isFlipping ? "coin-flip" : ""
             }`}
           >
-            <div className="absolute w-full h-full rounded-full flex items-center justify-center [backface-visibility:hidden]">
-              <img src={frontSideCoin} className="rounded-full" alt="" />
+            <div
+              className="absolute w-full h-full rounded-full border-4 flex items-center justify-center [backface-visibility:hidden]"
+              style={{
+                backgroundColor: "#C7D3D4FF",
+                borderColor: "#9CC3D5FF",
+              }}
+            >
+              <PiStarOfDavidBold size={50} color="#9CC3D5FF" />
             </div>
-            <div className="absolute w-full h-full rounded-full flex items-center justify-center [transform:rotateY(180deg)] [backface-visibility:hidden]">
-              <img src={frontSideCoin} className="rounded-full" alt="" />
+            <div
+              className="absolute w-full h-full rounded-full border-4 flex items-center justify-center [transform:rotateY(180deg)] [backface-visibility:hidden]"
+              style={{
+                backgroundColor: "#9CC3D5FF",
+                color: "#C7D3D4FF",
+                borderColor: "#C7D3D4FF",
+              }}
+            >
+              <span className="text-3xl">שלום</span>
             </div>
           </div>
         </div>
@@ -240,7 +237,7 @@ const Roman = () => {
             tossCoin={tossCoin}
             inputWish={inputWish}
             setInputWish={setInputWish}
-            title="Fortuna's Oracle"
+            title="Judaism Mazel Oracle"
           />
         </>
       )}
@@ -248,4 +245,4 @@ const Roman = () => {
   );
 };
 
-export default Roman;
+export default Judaism;

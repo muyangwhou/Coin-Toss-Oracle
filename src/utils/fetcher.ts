@@ -15,16 +15,16 @@ const fetcher = async (
 ) => {
   const requestHeader = new Headers();
 
-  /* const LocalUser: LoginDto =
-    JSON.parse(localStorage.getItem("auth")!) || undefined; */
+  const walletToken =
+    JSON.parse(localStorage.getItem("walletToken")!) || undefined;
 
   if (method.toLowerCase() !== "get") {
     requestHeader.append("Content-Type", "application/json");
   }
 
-  /* if (LocalUser) {
-    requestHeader.append("Authorization", `Bearer ${LocalUser.token}`);
-  } */
+  if (walletToken) {
+    requestHeader.append("Authorization", `Bearer ${walletToken}`);
+  }
 
   const params: RequestInit = {
     headers: requestHeader,

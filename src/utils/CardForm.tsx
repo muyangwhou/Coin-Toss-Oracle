@@ -91,6 +91,7 @@ const CardForm: React.FC<Props> = ({
               <Input
                 type="text"
                 id="balance"
+                autoComplete="off"
                 required
                 pattern="[0-9]*"
                 inputMode="numeric"
@@ -120,7 +121,7 @@ const CardForm: React.FC<Props> = ({
                   1 > Number(inputBalance))
             }
           >
-            Toss
+            Wish
           </Button>
         </div>
       </CardContent>

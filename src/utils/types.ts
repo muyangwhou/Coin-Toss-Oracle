@@ -17,6 +17,10 @@ export interface CelticDto {
   name: string;
   meaning: string;
 }
+export interface JudaismDto {
+  title: string;
+  meaning: string;
+}
 export interface EgyptDto {
   side: string;
   symbol: string;
@@ -39,4 +43,37 @@ export interface MayanDto {
   name: string;
   meaning: string;
   energy: string;
+}
+
+export interface PayloadDto {
+  transactionHash: string;
+  chainId: number;
+  currency: string;
+  theme: string;
+}
+
+export interface LeaderBoardDto {
+  rank?: number;
+  walletId: string;
+  tokensBurned: number;
+  chainId: number;
+  currency: string;
+}
+
+export type ChristianResponse = {
+  message: string;
+  verse: string;
+};
+
+export type CategoryResponses = {
+  [key: string]: ChristianResponse[];
+};
+
+export type SideResponses = {
+  [key: string]: CategoryResponses;
+};
+
+export interface ChristianDto {
+  response: ChristianResponse;
+  category: string;
 }

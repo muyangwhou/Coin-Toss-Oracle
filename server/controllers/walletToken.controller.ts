@@ -28,15 +28,12 @@ export const generateWalletAddressToken = CatchAsync(
       const web3Provider = new WebSocketProvider(web3Url);
       const web3 = new Web3(web3Provider);
 
-      const testnetContractAddress =
+      const contractAddress =
         payload.chainId === 51
           ? process.env.XDC_TESTNET_CONTRACT_ADDRESS!
           : process.env.XDC_MAINNET_CONTRACT_ADDRESS!;
 
-      const tokenContract = new web3.eth.Contract(
-        xrc20ABI,
-        testnetContractAddress
-      );
+      const tokenContract = new web3.eth.Contract(xrc20ABI, contractAddress);
 
       const dopuBalance = await tokenContract.methods
         .balanceOf(payload.walletAddress)

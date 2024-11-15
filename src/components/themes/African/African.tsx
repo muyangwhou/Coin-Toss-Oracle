@@ -11,6 +11,7 @@ import AfricanModal from "./AfricanModal";
 import { BsSuitDiamond } from "react-icons/bs";
 import { AfricanDto } from "@/utils/types";
 import CardForm from "@/utils/CardForm";
+import { api } from "@/utils/api";
 
 const African = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -82,30 +83,35 @@ const African = () => {
     const outcome = Math.random() < 0.5 ? "heads" : "tails";
     setResult(outcomes[outcome]);
     setIsFlipping(true);
+    setIsLoading(false);
+
+    if (txResponse) {
+      try {
+        const sendPayload = await api.generateTossTransaction({
+          transactionHash: txResponse.transactionHash as string,
+          chainId: chainId!,
+          currency: currency.toUpperCase(),
+          theme: "African",
+        });
+        console.log("sendPayload", sendPayload);
+      } catch (error) {
+        console.log(error);
+      }
+    }
   };
 
   const burnDopuBalance = async () => {
-    const testnetContractAddress =
+    const burnAddress =
       chainId === 51
         ? import.meta.env.VITE_XDC_TESTNET_CONTRACT_ADDRESS!
         : import.meta.env.VITE_XDC_MAINNET_CONTRACT_ADDRESS!;
 
-    const tokenContract = new web3.eth.Contract(
-      xrc20ABI,
-      testnetContractAddress
-    );
-
-    const valueInWei = web3.utils.toWei(inputBalance, "ether");
-
-    const testnetBurnAddress =
-      chainId === 51
-        ? import.meta.env.VITE_XDC_TESTNET_CONTRACT_ADDRESS
-        : import.meta.env.VITE_XDC_MAINNET_CONTRACT_ADDRESS;
+    const tokenContract = new web3.eth.Contract(xrc20ABI, burnAddress);
 
     const gasPrice = await web3.eth.getGasPrice();
 
     await tokenContract.methods
-      .transfer(testnetBurnAddress, valueInWei)
+      .transfer(burnAddress, valueInWei)
       .send({ from: address, gasPrice: gasPrice.toString() })
       .on("receipt", async function (txs) {
         const formattedTransaction = formatTransaction(txs.transactionHash);
@@ -127,6 +133,20 @@ const African = () => {
         const outcome = Math.random() < 0.5 ? "heads" : "tails";
         setResult(outcomes[outcome]);
         setIsFlipping(true);
+
+        if (txs) {
+          try {
+            const sendPayload = await api.generateTossTransaction({
+              transactionHash: txs.transactionHash,
+              chainId: chainId!,
+              currency: currency.toUpperCase(),
+              theme: "African",
+            });
+            console.log("sendPayload", sendPayload);
+          } catch (error) {
+            console.log(error);
+          }
+        }
       });
   };
 
@@ -201,13 +221,23 @@ const African = () => {
               isFlipping ? "coin-flip" : ""
             }`}
           >
-            <div className="absolute w-full h-full rounded-full border-4 border-amber-400 bg-red-900 flex items-center justify-center [backface-visibility:hidden]">
-              <BsSuitDiamond size={40} color="#fbbf24" />
+            <div
+              className="absolute w-full h-full rounded-full border-4 flex items-center justify-center [backface-visibility:hidden]"
+              style={{
+                backgroundColor: "#DAA03DFF",
+                borderColor: "#616247FF",
+              }}
+            >
+              <BsSuitDiamond size={35} color="#616247FF" />
             </div>
-            <div className="absolute w-full h-full rounded-full border-4 border-amber-400 bg-red-900 flex items-center justify-center [transform:rotateY(180deg)] [backface-visibility:hidden]">
-              <div className="text-amber-800 text-2xl font-bold">
-                <RxCircle size={35} color="#fbbf24" />
-              </div>
+            <div
+              className="absolute w-full h-full rounded-full border-4 flex items-center justify-center [transform:rotateY(180deg)] [backface-visibility:hidden]"
+              style={{
+                backgroundColor: "#616247FF",
+                borderColor: "#DAA03DFF",
+              }}
+            >
+              <RxCircle size={35} color="#DAA03DFF" />
             </div>
           </div>
         </div>

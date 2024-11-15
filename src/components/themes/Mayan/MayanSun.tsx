@@ -1,59 +1,101 @@
 import { useContext, useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MyBalanceContext } from "@/components/BalanceContext";
 import { FourSquare } from "react-loading-indicators";
-import { xrc20ABI } from "@/utils/XRC20ABI";
-import Web3 from "web3";
+import { MyBalanceContext } from "@/components/BalanceContext";
 import toast from "react-hot-toast";
 import { formatTransaction } from "@/utils/formatTransactionHash";
-import coin from "../../../assets/images/nativeAmericanCoin.jpeg";
+import { xrc20ABI } from "@/utils/XRC20ABI";
+import Web3 from "web3";
+import CardForm from "@/utils/CardForm";
+import { api } from "@/utils/api";
 import { MayanDto } from "@/utils/types";
-// import { mayanSigns } from "./mayanSigns";
+import { mayanSigns } from "./mayanSigns";
+import MayanSunModal from "./MayanSunModal";
 
 const MayanSun = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isFlipping, setIsFlipping] = useState(false);
   const [result, setResult] = useState<MayanDto>();
+  const [isFlipping, setIsFlipping] = useState(false);
   const [transactionHash, setTransactionHash] = useState<string>("");
+  const [inputBalance, setInputBalance] = useState<string>("");
+  const [inputWish, setInputWish] = useState<string>("");
   const [formattedTransactionHash, setFormattedTransactionHash] =
     useState<string>("");
-  console.log("result", result);
-  console.log("transactionHash", transactionHash);
-  console.log("formattedTransactionHash", formattedTransactionHash);
-
   const [isDialog, setIsDialog] = useState<boolean>(false);
+  const [currency, setCurrency] = useState<string>("xdc");
 
   const context = useContext(MyBalanceContext);
   const chainId = context?.chainId;
   const setDopuBalance = context?.setDopuBalance;
+  const setXdcBalance = context?.setXdcBalance;
   const address = context?.address;
 
-  const tossCoin = async () => {
-    setIsFlipping(true);
-    setIsLoading(true);
+  const web3 = new Web3(window.web3);
+  const valueInWei = web3.utils.toWei(inputBalance, "ether");
 
-    const web3 = new Web3(window.web3);
-    const testnetContractAddress =
+  const burnXdcBalance = async () => {
+    const burnAddress =
+      chainId === 51
+        ? import.meta.env.VITE_DOPU_TESTNET_BURN_ADDRESS!
+        : import.meta.env.VITE_DOPU_MAINNET_BURN_ADDRESS;
+
+    const gasLimit = "21000";
+    const gasPrice = await web3.eth.getGasPrice();
+
+    const transaction = {
+      from: address,
+      to: burnAddress,
+      value: valueInWei,
+      gas: gasLimit,
+      gasPrice: gasPrice,
+    };
+
+    const txResponse = await web3.eth.sendTransaction(transaction);
+
+    const formattedTransaction = formatTransaction(
+      txResponse.transactionHash as string
+    );
+    setFormattedTransactionHash(formattedTransaction!);
+    setTransactionHash(txResponse.transactionHash as string);
+
+    const newBalance = await web3.eth.getBalance(address!);
+    const formattedXdcBalance = Number(
+      (Number(newBalance) / Math.pow(10, 18)).toFixed(2)
+    );
+    setXdcBalance!(formattedXdcBalance.toString());
+
+    const finalResult =
+      mayanSigns[Math.floor(Math.random() * mayanSigns.length)];
+    setResult(finalResult);
+    setIsFlipping(true);
+    setIsLoading(false);
+
+    if (txResponse) {
+      try {
+        const sendPayload = await api.generateTossTransaction({
+          transactionHash: txResponse.transactionHash as string,
+          chainId: chainId!,
+          currency: currency.toUpperCase(),
+          theme: "Mayan",
+        });
+        console.log("sendPayload", sendPayload);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
+
+  const burnDopuBalance = async () => {
+    const burnAddress =
       chainId === 51
         ? import.meta.env.VITE_XDC_TESTNET_CONTRACT_ADDRESS!
         : import.meta.env.VITE_XDC_MAINNET_CONTRACT_ADDRESS!;
 
-    const tokenContract = new web3.eth.Contract(
-      xrc20ABI,
-      testnetContractAddress
-    );
-
-    const valueInWei = web3.utils.toWei(1, "ether");
-
-    const testnetBurnAddress =
-      chainId === 51
-        ? import.meta.env.VITE_XDC_TESTNET_CONTRACT_ADDRESS
-        : import.meta.env.VITE_XDC_MAINNET_CONTRACT_ADDRESS;
+    const tokenContract = new web3.eth.Contract(xrc20ABI, burnAddress);
 
     const gasPrice = await web3.eth.getGasPrice();
 
     await tokenContract.methods
-      .transfer(testnetBurnAddress, valueInWei)
+      .transfer(burnAddress, valueInWei)
       .send({ from: address, gasPrice: gasPrice.toString() })
       .on("receipt", async function (txs) {
         const formattedTransaction = formatTransaction(txs.transactionHash);
@@ -72,54 +114,83 @@ const MayanSun = () => {
           Number(Number(dopuBalance) / Math.pow(10, decimals)).toFixed(2)
         );
 
+        const finalResult =
+          mayanSigns[Math.floor(Math.random() * mayanSigns.length)];
+        setResult(finalResult);
+        setIsFlipping(true);
         setDopuBalance!(formattedBalance.toString());
-        /*  const currentHour = new Date().getHours();
-        const randomIndex = Math.floor(Math.random() * mayanSigns.length);
-        const timeEnergy = currentHour < 12 ? "growing" : "diminishing";
 
-        setResult({
-            ...mayanSigns[randomIndex],
-            timeEnergy,
-            interpretation: `The energy is ${timeEnergy}. ${mayanSigns[randomIndex].name}'s energy suggests a time for ${mayanSigns[randomIndex].meaning.toLowerCase()}.`
-          }); */
-
-        /* const randomSpirit =
-          spirits[Math.floor(Math.random() * spirits.length)];
-        setSpirit(randomSpirit); */
-
-        setIsDialog(true);
-      })
-      .catch((error: unknown) => {
-        if (error instanceof Error) {
-          console.log("Error occurred in approve transaction:", error);
-          setIsLoading(false);
-          setIsFlipping(false);
-          toast.error(error.message);
+        if (txs) {
+          try {
+            const sendPayload = await api.generateTossTransaction({
+              transactionHash: txs.transactionHash,
+              chainId: chainId!,
+              currency: currency.toUpperCase(),
+              theme: "Mayan",
+            });
+            console.log("sendPayload", sendPayload);
+          } catch (error) {
+            console.log(error);
+          }
         }
       });
-
-    setIsLoading(false);
-    setIsFlipping(false);
   };
+
+  const tossCoin = async () => {
+    setIsLoading(true);
+    try {
+      if (currency === "xdc") {
+        await burnXdcBalance();
+      } else {
+        await burnDopuBalance();
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        console.log("Error occurred in approve transaction:", error);
+        setIsLoading(false);
+        setInputBalance("");
+        setInputWish("");
+        setCurrency("xdc");
+        toast.error(error.message);
+      }
+    } finally {
+      setIsLoading(false);
+      setInputBalance("");
+      setInputWish("");
+      setCurrency("xdc");
+    }
+  };
+
+  useEffect(() => {
+    if (isFlipping === true) {
+      setTimeout(() => {
+        setIsFlipping(false);
+        setIsDialog(true);
+      }, 4000);
+    }
+  }, [isFlipping]);
 
   useEffect(() => {
     if (isDialog === false) {
       setResult(undefined);
+      setInputBalance("");
+      setInputWish("");
+      setCurrency("xdc");
     }
   }, [isDialog]);
 
   return (
-    <div className={`flex-grow flex flex-col justify-center items-center`}>
-      {/* {isDialog && (
-        <NativeAmericanModal
+    <div className="flex-grow flex flex-col justify-center items-center">
+      {isDialog && (
+        <MayanSunModal
           showModal={isDialog}
           setShowModal={setIsDialog}
-          data={spirit!}
+          data={result!}
           transactionHash={transactionHash}
           formattedTransactionHash={formattedTransactionHash}
           chainId={chainId!}
         />
-      )} */}
+      )}
       {isLoading && (
         <div className="overlay">
           <div className="loader">
@@ -127,25 +198,49 @@ const MayanSun = () => {
           </div>
         </div>
       )}
-      <Card className="max-w-md w-full mx-auto">
-        <CardHeader className="text-center border-b border-slate-200">
-          <CardTitle className="text-center text-2xl">Spirit Toss</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col items-center gap-6 p-6">
+      {isFlipping ? (
+        <div className="relative w-32 h-32 [perspective:1000px]">
           <div
-            className={`w-32 h-32 rounded-full flex items-center justify-center`}
+            className={`w-full h-full relative [transform-style:preserve-3d] ${
+              isFlipping ? "coin-flip" : ""
+            }`}
           >
-            <img src={coin} className="rounded-full" alt="" />
+            <div
+              className="absolute w-full h-full rounded-full border-4 flex items-center justify-center [backface-visibility:hidden]"
+              style={{
+                backgroundColor: "#D4B996FF",
+                color: "#755139FF",
+                borderColor: "#755139FF",
+              }}
+            >
+              <span className="text-4xl">Ik</span>
+            </div>
+            <div
+              className="absolute w-full h-full rounded-full border-4 flex items-center justify-center [transform:rotateY(180deg)] [backface-visibility:hidden]"
+              style={{
+                backgroundColor: "#755139FF",
+                color: "#D4B996FF",
+                borderColor: "#D4B996FF",
+              }}
+            >
+              <span className="text-4xl">Kan</span>
+            </div>
           </div>
-          <button
-            onClick={tossCoin}
-            disabled={isFlipping}
-            className="bg-yellow-800 hover:bg-yellow-900 text-white px-6 py-3 rounded-lg"
-          >
-            Toss
-          </button>
-        </CardContent>
-      </Card>
+        </div>
+      ) : (
+        <>
+          <CardForm
+            inputBalance={inputBalance}
+            setInputBalance={setInputBalance}
+            setCurrency={setCurrency}
+            currency={currency}
+            tossCoin={tossCoin}
+            inputWish={inputWish}
+            setInputWish={setInputWish}
+            title="Mayan Sun Toss"
+          />
+        </>
+      )}
     </div>
   );
 };

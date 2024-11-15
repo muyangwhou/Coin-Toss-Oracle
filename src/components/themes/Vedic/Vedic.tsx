@@ -7,8 +7,10 @@ import { xrc20ABI } from "@/utils/XRC20ABI";
 import Web3 from "web3";
 import toast from "react-hot-toast";
 import { formatTransaction } from "@/utils/formatTransactionHash";
-import omImg from "../../../assets/images/vedicOmCoin.jpeg";
 import CardForm from "@/utils/CardForm";
+import { api } from "@/utils/api";
+import { PiFlowerLotus } from "react-icons/pi";
+import { LiaOmSolid } from "react-icons/lia";
 
 const Vedic = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -77,30 +79,35 @@ const Vedic = () => {
     setResult(randomSymbol);
     setGuidance(guidanceMessages[randomSymbol][randomArea]);
     setIsFlipping(true);
+    setIsLoading(false);
+
+    if (txResponse) {
+      try {
+        const sendPayload = await api.generateTossTransaction({
+          transactionHash: txResponse.transactionHash as string,
+          chainId: chainId!,
+          currency: currency.toUpperCase(),
+          theme: "Vedic",
+        });
+        console.log("sendPayload", sendPayload);
+      } catch (error) {
+        console.log(error);
+      }
+    }
   };
 
   const burnDopuBalance = async () => {
-    const testnetContractAddress =
+    const burnAddress =
       chainId === 51
         ? import.meta.env.VITE_XDC_TESTNET_CONTRACT_ADDRESS!
         : import.meta.env.VITE_XDC_MAINNET_CONTRACT_ADDRESS!;
 
-    const tokenContract = new web3.eth.Contract(
-      xrc20ABI,
-      testnetContractAddress
-    );
-
-    const valueInWei = web3.utils.toWei(inputBalance, "ether");
-
-    const testnetBurnAddress =
-      chainId === 51
-        ? import.meta.env.VITE_XDC_TESTNET_CONTRACT_ADDRESS
-        : import.meta.env.VITE_XDC_MAINNET_CONTRACT_ADDRESS;
+    const tokenContract = new web3.eth.Contract(xrc20ABI, burnAddress);
 
     const gasPrice = await web3.eth.getGasPrice();
 
     await tokenContract.methods
-      .transfer(testnetBurnAddress, valueInWei)
+      .transfer(burnAddress, valueInWei)
       .send({ from: address, gasPrice: gasPrice.toString() })
       .on("receipt", async function (txs) {
         const formattedTransaction = formatTransaction(txs.transactionHash);
@@ -133,6 +140,20 @@ const Vedic = () => {
         setResult(randomSymbol);
         setGuidance(guidanceMessages[randomSymbol][randomArea]);
         setIsFlipping(true);
+
+        if (txs) {
+          try {
+            const sendPayload = await api.generateTossTransaction({
+              transactionHash: txs.transactionHash,
+              chainId: chainId!,
+              currency: currency.toUpperCase(),
+              theme: "Vedic",
+            });
+            console.log("sendPayload", sendPayload);
+          } catch (error) {
+            console.log(error);
+          }
+        }
       });
   };
 
@@ -206,19 +227,23 @@ const Vedic = () => {
               isFlipping ? "coin-flip" : ""
             }`}
           >
-            <div className="absolute w-full h-full rounded-full flex items-center justify-center [backface-visibility:hidden]">
-              <img
-                src={omImg}
-                className="rounded-full animate-flip"
-                alt="Om-img"
-              />
+            <div
+              className="absolute w-full h-full rounded-full border-4 flex items-center justify-center [backface-visibility:hidden]"
+              style={{
+                backgroundColor: "#D198C5FF",
+                borderColor: "#0063B2FF",
+              }}
+            >
+              <LiaOmSolid size={50} />
             </div>
-            <div className="absolute w-full h-full rounded-full flex items-center justify-center [transform:rotateY(180deg)] [backface-visibility:hidden]">
-              <img
-                src={omImg}
-                className="rounded-full animate-flip"
-                alt="Om-img"
-              />
+            <div
+              className="absolute w-full h-full rounded-full border-4 flex items-center justify-center [transform:rotateY(180deg)] [backface-visibility:hidden]"
+              style={{
+                backgroundColor: "#0063B2FF",
+                borderColor: "#D198C5FF",
+              }}
+            >
+              <PiFlowerLotus size={50} />
             </div>
           </div>
         </div>

@@ -1,23 +1,23 @@
 import { useContext, useEffect, useState } from "react";
-import { FourSquare } from "react-loading-indicators";
 import { MyBalanceContext } from "@/components/BalanceContext";
-import toast from "react-hot-toast";
-import { formatTransaction } from "@/utils/formatTransactionHash";
+import { FourSquare } from "react-loading-indicators";
 import { xrc20ABI } from "@/utils/XRC20ABI";
 import Web3 from "web3";
-import { fortunaPredictions } from "./fortunePrediction";
-import RomanModal from "./RomanModal";
-import frontSideCoin from "../../../assets/images/fortunaCoin.avif";
+import toast from "react-hot-toast";
+import { formatTransaction } from "@/utils/formatTransactionHash";
 import CardForm from "@/utils/CardForm";
 import { api } from "@/utils/api";
+import { greekFortune } from "./greekFortune";
+import GreekModal from "./GreekModal";
+import { GiGreekTemple, GiLaurels } from "react-icons/gi";
 
-const Roman = () => {
+const Greek = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [prediction, setPrediction] = useState<string>("");
+  const [isFlipping, setIsFlipping] = useState(false);
+  const [prediction, setPrediction] = useState("");
   const [category, setCategory] = useState<string>("");
   const [inputBalance, setInputBalance] = useState<string>("");
   const [inputWish, setInputWish] = useState<string>("");
-  const [isFlipping, setIsFlipping] = useState(false);
   const [transactionHash, setTransactionHash] = useState<string>("");
   const [formattedTransactionHash, setFormattedTransactionHash] =
     useState<string>("");
@@ -64,12 +64,11 @@ const Roman = () => {
     );
     setXdcBalance!(formattedXdcBalance.toString());
 
-    const categories = Object.keys(fortunaPredictions);
+    const categories = Object.keys(greekFortune);
     const category = categories[Math.floor(Math.random() * categories.length)];
     setCategory(category);
 
-    const predictions =
-      fortunaPredictions[category as keyof typeof fortunaPredictions];
+    const predictions = greekFortune[category as keyof typeof greekFortune];
 
     const result = predictions[Math.floor(Math.random() * predictions.length)];
 
@@ -83,7 +82,7 @@ const Roman = () => {
           transactionHash: txResponse.transactionHash as string,
           chainId: chainId!,
           currency: currency.toUpperCase(),
-          theme: "Roman",
+          theme: "Greek",
         });
         console.log("sendPayload", sendPayload);
       } catch (error) {
@@ -121,14 +120,15 @@ const Roman = () => {
         const formattedBalance = Number(
           Number(Number(dopuBalance) / Math.pow(10, decimals)).toFixed(2)
         );
+
         setDopuBalance!(formattedBalance.toString());
-        const categories = Object.keys(fortunaPredictions);
+
+        const categories = Object.keys(greekFortune);
         const category =
           categories[Math.floor(Math.random() * categories.length)];
         setCategory(category);
 
-        const predictions =
-          fortunaPredictions[category as keyof typeof fortunaPredictions];
+        const predictions = greekFortune[category as keyof typeof greekFortune];
 
         const result =
           predictions[Math.floor(Math.random() * predictions.length)];
@@ -142,7 +142,7 @@ const Roman = () => {
               transactionHash: txs.transactionHash,
               chainId: chainId!,
               currency: currency.toUpperCase(),
-              theme: "Roman",
+              theme: "Greek",
             });
             console.log("sendPayload", sendPayload);
           } catch (error) {
@@ -171,9 +171,9 @@ const Roman = () => {
       }
     } finally {
       setIsLoading(false);
+      setCurrency("xdc");
       setInputBalance("");
       setInputWish("");
-      setCurrency("xdc");
     }
   };
 
@@ -189,17 +189,17 @@ const Roman = () => {
   useEffect(() => {
     if (isDialog === false) {
       setPrediction("");
-      setCategory("");
       setInputBalance("");
+      setCategory("");
       setInputWish("");
       setCurrency("xdc");
     }
   }, [isDialog]);
 
   return (
-    <div className="flex-grow flex flex-col justify-center items-center">
+    <div className={`flex-grow flex flex-col justify-center items-center`}>
       {isDialog && (
-        <RomanModal
+        <GreekModal
           showModal={isDialog}
           setShowModal={setIsDialog}
           data={{ prediction, category }}
@@ -222,11 +222,23 @@ const Roman = () => {
               isFlipping ? "coin-flip" : ""
             }`}
           >
-            <div className="absolute w-full h-full rounded-full flex items-center justify-center [backface-visibility:hidden]">
-              <img src={frontSideCoin} className="rounded-full" alt="" />
+            <div
+              className="absolute w-full h-full rounded-full border-4 flex items-center justify-center [backface-visibility:hidden]"
+              style={{
+                backgroundColor: "#FFD662FF",
+                borderColor: "#2BAE66FF",
+              }}
+            >
+              <GiLaurels size={40} color="#2BAE66FF" />
             </div>
-            <div className="absolute w-full h-full rounded-full flex items-center justify-center [transform:rotateY(180deg)] [backface-visibility:hidden]">
-              <img src={frontSideCoin} className="rounded-full" alt="" />
+            <div
+              className="absolute w-full h-full rounded-full border-4 flex items-center justify-center [transform:rotateY(180deg)] [backface-visibility:hidden]"
+              style={{
+                backgroundColor: "#2BAE66FF",
+                borderColor: "#FFD662FF",
+              }}
+            >
+              <GiGreekTemple size={40} color="#FFD662FF" />
             </div>
           </div>
         </div>
@@ -240,7 +252,7 @@ const Roman = () => {
             tossCoin={tossCoin}
             inputWish={inputWish}
             setInputWish={setInputWish}
-            title="Fortuna's Oracle"
+            title="Greek Delphi Oracle"
           />
         </>
       )}
@@ -248,4 +260,4 @@ const Roman = () => {
   );
 };
 
-export default Roman;
+export default Greek;

@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { BsCopy } from "react-icons/bs";
 import {
   Tooltip,
@@ -17,9 +17,11 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { FaUser, FaWallet } from "react-icons/fa";
+import { MdLeaderboard } from "react-icons/md";
 import { MyBalanceContext } from "./BalanceContext";
 import { xdc, xdcTestnet } from "viem/chains";
-// import { api } from "@/utils/api";
+import { api } from "@/utils/api";
+import { NavLink } from "react-router-dom";
 
 const DropdownMenuDemo = () => {
   const [toolTip, setToolTip] = useState("Copy To Clipboard");
@@ -134,7 +136,7 @@ const DropdownMenuDemo = () => {
 const Connect = () => {
   const context = useContext(MyBalanceContext);
   const dopuBalance = context?.dopuBalance;
-  // const address = context?.address;
+  const address = context?.address;
   const xdcBalance = context?.xdcBalance;
   const gamaSymbol = context?.gamaSymbol;
   const isConnected = context?.isConnected;
@@ -146,9 +148,9 @@ const Connect = () => {
   const formatter = new Intl.NumberFormat("en-US");
   const formattedBalance = formatter.format(Number(dopuBalance));
   const formattedXdcBalance = formatter.format(Number(xdcBalance));
-  // const apiCalledRef = useRef(false);
+  const apiCalledRef = useRef(false);
 
-  /* const fetchData = async () => {
+  const fetchData = async () => {
     try {
       const sendPayload = await api.generateWalletToken({
         walletAddress: address!,
@@ -156,22 +158,29 @@ const Connect = () => {
       });
       if (sendPayload.token) {
         localStorage.setItem("walletToken", JSON.stringify(sendPayload.token));
+        localStorage.setItem("isDisclaimer", JSON.stringify(true));
       }
       apiCalledRef.current = true;
     } catch (error) {
       console.error("API call error:", error);
     }
-  }; */
+  };
 
-  /* useEffect(() => {
+  useEffect(() => {
     if (isConnected && !apiCalledRef.current) {
       fetchData();
     }
-  }, [isConnected, address, chainId]); */
+  }, [isConnected, address, chainId]);
 
   if (isConnected) {
     return (
       <div className="flex justify-between gap-3">
+        <NavLink
+          to="/leaderboard"
+          className="flex justify-between items-center border px-3 rounded-md py-1"
+        >
+          <MdLeaderboard size={22} />
+        </NavLink>
         <div className="flex justify-between items-center border px-5 rounded-md py-1 gap-3">
           <div className="font-semibold">
             {formattedBalance} {gamaSymbol}
@@ -186,7 +195,7 @@ const Connect = () => {
       </div>
     );
   } else {
-    // apiCalledRef.current = false;
+    apiCalledRef.current = false;
     return (
       <button
         disabled={!connected}

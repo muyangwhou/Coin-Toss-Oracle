@@ -5,13 +5,12 @@ import toast from "react-hot-toast";
 import { formatTransaction } from "@/utils/formatTransactionHash";
 import { xrc20ABI } from "@/utils/XRC20ABI";
 import Web3 from "web3";
-import { fortunaPredictions } from "./fortunePrediction";
-import RomanModal from "./RomanModal";
-import frontSideCoin from "../../../assets/images/fortunaCoin.avif";
 import CardForm from "@/utils/CardForm";
 import { api } from "@/utils/api";
+import ZoroModal from "./ZoroModal";
+import { zoroPrediction } from "./zoroPrediction";
 
-const Roman = () => {
+const Zoroastrian = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [prediction, setPrediction] = useState<string>("");
   const [category, setCategory] = useState<string>("");
@@ -64,12 +63,11 @@ const Roman = () => {
     );
     setXdcBalance!(formattedXdcBalance.toString());
 
-    const categories = Object.keys(fortunaPredictions);
+    const categories = Object.keys(zoroPrediction);
     const category = categories[Math.floor(Math.random() * categories.length)];
     setCategory(category);
 
-    const predictions =
-      fortunaPredictions[category as keyof typeof fortunaPredictions];
+    const predictions = zoroPrediction[category as keyof typeof zoroPrediction];
 
     const result = predictions[Math.floor(Math.random() * predictions.length)];
 
@@ -83,7 +81,7 @@ const Roman = () => {
           transactionHash: txResponse.transactionHash as string,
           chainId: chainId!,
           currency: currency.toUpperCase(),
-          theme: "Roman",
+          theme: "Zoroastrian",
         });
         console.log("sendPayload", sendPayload);
       } catch (error) {
@@ -122,13 +120,13 @@ const Roman = () => {
           Number(Number(dopuBalance) / Math.pow(10, decimals)).toFixed(2)
         );
         setDopuBalance!(formattedBalance.toString());
-        const categories = Object.keys(fortunaPredictions);
+        const categories = Object.keys(zoroPrediction);
         const category =
           categories[Math.floor(Math.random() * categories.length)];
         setCategory(category);
 
         const predictions =
-          fortunaPredictions[category as keyof typeof fortunaPredictions];
+          zoroPrediction[category as keyof typeof zoroPrediction];
 
         const result =
           predictions[Math.floor(Math.random() * predictions.length)];
@@ -142,7 +140,7 @@ const Roman = () => {
               transactionHash: txs.transactionHash,
               chainId: chainId!,
               currency: currency.toUpperCase(),
-              theme: "Roman",
+              theme: "Zoroastrian",
             });
             console.log("sendPayload", sendPayload);
           } catch (error) {
@@ -199,7 +197,7 @@ const Roman = () => {
   return (
     <div className="flex-grow flex flex-col justify-center items-center">
       {isDialog && (
-        <RomanModal
+        <ZoroModal
           showModal={isDialog}
           setShowModal={setIsDialog}
           data={{ prediction, category }}
@@ -222,11 +220,25 @@ const Roman = () => {
               isFlipping ? "coin-flip" : ""
             }`}
           >
-            <div className="absolute w-full h-full rounded-full flex items-center justify-center [backface-visibility:hidden]">
-              <img src={frontSideCoin} className="rounded-full" alt="" />
+            <div
+              className="absolute w-full h-full rounded-full border-4 flex items-center justify-center [backface-visibility:hidden]"
+              style={{
+                backgroundColor: "#E69A8DFF",
+                color: "#5F4B8BFF",
+                borderColor: "#5F4B8BFF",
+              }}
+            >
+              <span className="text-3xl font-bold">𓄂𓆃</span>
             </div>
-            <div className="absolute w-full h-full rounded-full flex items-center justify-center [transform:rotateY(180deg)] [backface-visibility:hidden]">
-              <img src={frontSideCoin} className="rounded-full" alt="" />
+            <div
+              className="absolute w-full h-full rounded-full border-4 flex items-center justify-center [transform:rotateY(180deg)] [backface-visibility:hidden]"
+              style={{
+                backgroundColor: "#5F4B8BFF",
+                color: "#E69A8DFF",
+                borderColor: "#E69A8DFF",
+              }}
+            >
+              <span className="text-6xl">☫</span>
             </div>
           </div>
         </div>
@@ -240,7 +252,7 @@ const Roman = () => {
             tossCoin={tossCoin}
             inputWish={inputWish}
             setInputWish={setInputWish}
-            title="Fortuna's Oracle"
+            title="Zoroastrian Oracle Toss"
           />
         </>
       )}
@@ -248,4 +260,4 @@ const Roman = () => {
   );
 };
 
-export default Roman;
+export default Zoroastrian;
