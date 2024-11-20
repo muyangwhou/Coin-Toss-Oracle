@@ -8,7 +8,7 @@ export default defineConfig({
     include: ["react-icons"],
   },
   server: {
-    port: 5000,
+    port: 5001,
   },
   build: {
     assetsInlineLimit: 0, // Set to 0 to disable inlining

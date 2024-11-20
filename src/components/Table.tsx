@@ -1,4 +1,4 @@
-import React, { CSSProperties, LegacyRef } from "react";
+import React, { CSSProperties } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,24 +50,6 @@ interface ITable<T extends object> {
   data: T[];
   totalResult: number;
 }
-
-const CustomToggle = React.forwardRef(
-  (
-    { children, onClick }: { children: JSX.Element; onClick: any },
-    ref: LegacyRef<HTMLButtonElement>
-  ) => (
-    <button
-      ref={ref}
-      className="border-0 bg-transparent p-0"
-      onClick={(e) => {
-        e.preventDefault();
-        onClick(e);
-      }}
-    >
-      {children}
-    </button>
-  )
-);
 
 function Table<T extends object>({
   columns,

@@ -17,7 +17,7 @@ const app = express();
 const server = createServer(app);
 
 // Environment variables and logging setup
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 5000;
 const logsDirectory = "api-response.log";
 const accessLogStream = fs.createWriteStream(
   path.join(__dirname, ".", logsDirectory),
