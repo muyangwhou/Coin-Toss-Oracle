@@ -36,7 +36,7 @@ const fetcher = async (
     params.body = JSON.stringify(data);
   }
 
-  const URL = `http://localhost:5000${url}`;
+  const URL = `${window.location.origin}/${url}`;
 
   try {
     const response = await fetch(URL, params);
