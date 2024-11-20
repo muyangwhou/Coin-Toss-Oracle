@@ -36,7 +36,7 @@ const fetcher = async (
     params.body = JSON.stringify(data);
   }
 
-  const URL = `${window.location.origin}/${url}`;
+  const URL = `${window.location.origin}${url}`;
 
   try {
     const response = await fetch(URL, params);
