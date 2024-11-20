@@ -36,7 +36,7 @@ const fetcher = async (
     params.body = JSON.stringify(data);
   }
 
-  const URL = `http://localhost:3001${url}`;
+  const URL = `http://localhost:5000${url}`;
 
   try {
     const response = await fetch(URL, params);
