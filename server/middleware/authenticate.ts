@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import prisma from "../utils/prisma";
 import { verify } from "jsonwebtoken";
+import { errorHandler } from "../utils/reshelper";
 
 interface DecodedWallet {
   id: string;
@@ -30,7 +31,7 @@ export const authenticateMiddleware = async (
 
   // Check if the token exists
   if (!token) {
-    res.status(401).send({ message: "No token provided" });
+    errorHandler(res, "No token provided!", false, 401);
     return;
   }
 
@@ -51,7 +52,7 @@ export const authenticateMiddleware = async (
     return;
   } catch (error) {
     console.log(error);
-    res.status(403).send({ message: "Invalid token" });
+    errorHandler(res, "Invalid token!", false, 403);
     return;
   }
 };

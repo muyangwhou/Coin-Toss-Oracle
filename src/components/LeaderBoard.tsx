@@ -83,11 +83,6 @@ const LeaderBoard = () => {
                 accessor: (e) => e.walletId,
               },
               {
-                id: "chainId",
-                Header: "Chain Id",
-                accessor: (e) => e.chainId,
-              },
-              {
                 id: "currency",
                 Header: "Currency",
                 accessor: (e) => e.currency,

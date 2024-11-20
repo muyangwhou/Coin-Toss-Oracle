@@ -37,19 +37,16 @@ const Egypt = () => {
   const valueInWei = web3.utils.toWei(inputBalance, "ether");
 
   const burnXdcBalance = async () => {
-    const burnAddress =
-      chainId === 51
-        ? import.meta.env.VITE_DOPU_TESTNET_BURN_ADDRESS!
-        : import.meta.env.VITE_DOPU_MAINNET_BURN_ADDRESS;
+    const burnAddress = import.meta.env.VITE_XDC_BURN_ADDRESS!;
 
-    const gasLimit = "21000";
+    const block = await web3.eth.getBlock("latest");
     const gasPrice = await web3.eth.getGasPrice();
 
     const transaction = {
       from: address,
       to: burnAddress,
       value: valueInWei,
-      gas: gasLimit,
+      gas: block.gasLimit,
       gasPrice: gasPrice,
     };
 
@@ -73,13 +70,12 @@ const Egypt = () => {
 
     if (txResponse) {
       try {
-        const sendPayload = await api.generateTossTransaction({
+        await api.generateTossTransaction({
           transactionHash: txResponse.transactionHash as string,
           chainId: chainId!,
           currency: currency.toUpperCase(),
           theme: "Egypt",
         });
-        console.log("sendPayload", sendPayload);
       } catch (error) {
         console.log(error);
       }
@@ -87,14 +83,16 @@ const Egypt = () => {
   };
 
   const burnDopuBalance = async () => {
-    const burnAddress =
+    const contractAddress =
       chainId === 51
         ? import.meta.env.VITE_XDC_TESTNET_CONTRACT_ADDRESS!
         : import.meta.env.VITE_XDC_MAINNET_CONTRACT_ADDRESS!;
 
-    const tokenContract = new web3.eth.Contract(xrc20ABI, burnAddress);
+    const tokenContract = new web3.eth.Contract(xrc20ABI, contractAddress);
 
     const gasPrice = await web3.eth.getGasPrice();
+
+    const burnAddress = import.meta.env.VITE_DOPU_BURN_ADDRESS;
 
     await tokenContract.methods
       .transfer(burnAddress, valueInWei)
@@ -119,16 +117,16 @@ const Egypt = () => {
         const outcome = outcomes[Math.floor(Math.random() * outcomes.length)];
         setOutcomeResult(outcome);
         setIsFlipping(true);
+        setIsLoading(false);
 
         if (txs) {
           try {
-            const sendPayload = await api.generateTossTransaction({
+            await api.generateTossTransaction({
               transactionHash: txs.transactionHash,
               chainId: chainId!,
               currency: currency.toUpperCase(),
               theme: "Egypt",
             });
-            console.log("sendPayload", sendPayload);
           } catch (error) {
             console.log(error);
           }
@@ -155,11 +153,6 @@ const Egypt = () => {
         setCurrency("xdc");
         toast.error(error.message);
       }
-    } finally {
-      setIsLoading(false);
-      setInputBalance("");
-      setInputWish("");
-      setCurrency("xdc");
     }
   };
 
@@ -191,6 +184,8 @@ const Egypt = () => {
           transactionHash={transactionHash}
           formattedTransactionHash={formattedTransactionHash}
           chainId={chainId!}
+          currency={currency}
+          balance={inputBalance}
         />
       )}
       {isLoading && (

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useContext } from "react";
+import { NavLink } from "react-router-dom";
 
 interface Props {
   inputBalance: string;
@@ -37,7 +38,11 @@ const CardForm: React.FC<Props> = ({
         <CardTitle className="text-lg">{title}</CardTitle>
       </CardHeader>
       <CardContent className="p-6">
-        <div className="flex flex-col space-y-2 mb-5">
+        <div className="flex flex-col space-y-2.5 mb-5">
+          <Label className="text-sm block">
+            Enter a wish or question or task below. The coin will decide with a
+            simple <b>YES</b> or <b>NO</b> answer!
+          </Label>
           <div>
             <Label htmlFor="xdc">Select Currency:</Label>
             <RadioGroup
@@ -64,6 +69,15 @@ const CardForm: React.FC<Props> = ({
                 <Label htmlFor="dopu">DOPU</Label>
               </div>
             </RadioGroup>
+          </div>
+          <div className="text-sm">
+            <NavLink
+              target="_blank"
+              to={currency === "xdc" ? "" : ""}
+              className="text-blue-700 underline"
+            >
+              Buy {currency === "xdc" ? "XDC" : "DOPU"}
+            </NavLink>
           </div>
           <div>
             <Label htmlFor="wish">Enter wish:</Label>
@@ -108,6 +122,12 @@ const CardForm: React.FC<Props> = ({
               />
             </div>
           </div>
+          <div className="leading-5 text-sm">
+            <b> Disclaimer:</b> I understand that the tossed coins will be
+            burned permanently. This activity is purely for fun and
+            entertainment purposes and does not influence real-life decisions or
+            outcomes. Participate responsibly and enjoy the experience!
+          </div>
         </div>
         <div className="flex flex-col items-center gap-6">
           <Button
@@ -121,7 +141,7 @@ const CardForm: React.FC<Props> = ({
                   1 > Number(inputBalance))
             }
           >
-            Wish
+            Toss The Coin
           </Button>
         </div>
       </CardContent>

@@ -26,6 +26,23 @@ const Layout = ({ children }: LayoutType) => {
         </div>
       </nav>
       {children}
+      <footer className="bg-white border-gray-200 dark:bg-gray-900 shadow-2xl p-3">
+        <div className="footer text-center">
+          <div className="mb-1">
+            <NavLink
+              to="https://gamacoin.ai/"
+              className="hover:text-blue-700 hover:underline"
+              target="_blank"
+            >
+              Powered in partnership with Gama Coin
+            </NavLink>
+          </div>
+          <div className="">
+            Partnership contribution towards growing meme season on XDC network
+            by GAMA
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

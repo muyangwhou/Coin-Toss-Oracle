@@ -19,6 +19,7 @@ import toast from "react-hot-toast";
 import { formatTransaction } from "@/utils/formatTransactionHash";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { api } from "@/utils/api";
+import { NavLink } from "react-router-dom";
 
 const Chinese = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -50,19 +51,16 @@ const Chinese = () => {
   const valueInWei = web3.utils.toWei(inputBalance, "ether");
 
   const burnXdcBalance = async () => {
-    const burnAddress =
-      chainId === 51
-        ? import.meta.env.VITE_DOPU_TESTNET_BURN_ADDRESS!
-        : import.meta.env.VITE_DOPU_MAINNET_BURN_ADDRESS;
+    const burnAddress = import.meta.env.VITE_XDC_BURN_ADDRESS!;
 
-    const gasLimit = "21000";
+    const block = await web3.eth.getBlock("latest");
     const gasPrice = await web3.eth.getGasPrice();
 
     const transaction = {
       from: address,
       to: burnAddress,
       value: valueInWei,
-      gas: gasLimit,
+      gas: block.gasLimit,
       gasPrice: gasPrice,
     };
 
@@ -84,13 +82,12 @@ const Chinese = () => {
 
     if (txResponse) {
       try {
-        const sendPayload = await api.generateTossTransaction({
+        await api.generateTossTransaction({
           transactionHash: txResponse.transactionHash as string,
           chainId: chainId!,
           currency: currency.toUpperCase(),
           theme: "Ching",
         });
-        console.log("sendPayload", sendPayload);
       } catch (error) {
         console.log(error);
       }
@@ -98,50 +95,60 @@ const Chinese = () => {
   };
 
   const burnDopuBalance = async () => {
-    const contractAddress =
-      chainId === 51
-        ? import.meta.env.VITE_XDC_TESTNET_CONTRACT_ADDRESS!
-        : import.meta.env.VITE_XDC_MAINNET_CONTRACT_ADDRESS!;
+    try {
+      const contractAddress =
+        chainId === 51
+          ? import.meta.env.VITE_XDC_TESTNET_CONTRACT_ADDRESS!
+          : import.meta.env.VITE_XDC_MAINNET_CONTRACT_ADDRESS!;
 
-    const tokenContract = new web3.eth.Contract(xrc20ABI, contractAddress);
+      const tokenContract = new web3.eth.Contract(xrc20ABI, contractAddress);
 
-    const gasPrice = await web3.eth.getGasPrice();
+      const gasPrice = await web3.eth.getGasPrice();
 
-    await tokenContract.methods
-      .transfer(contractAddress, valueInWei)
-      .send({ from: address, gasPrice: gasPrice.toString() })
-      .on("receipt", async function (txs) {
-        const formattedTransaction = formatTransaction(txs.transactionHash);
-        setFormattedTransactionHash(formattedTransaction!);
-        setTransactionHash(txs.transactionHash);
-        setGameScreen(true);
+      const burnAddress = import.meta.env.VITE_DOPU_BURN_ADDRESS;
 
-        const dopuBalance = await tokenContract.methods
-          .balanceOf(address)
-          .call();
-        const getDecimals: number = await tokenContract.methods
-          .decimals()
-          .call();
-        const decimals = Number(getDecimals);
-        const formattedBalance = Number(
-          Number(Number(dopuBalance) / Math.pow(10, decimals)).toFixed(2)
-        );
-        setDopuBalance!(formattedBalance.toString());
+      await tokenContract.methods
+        .transfer(burnAddress, valueInWei)
+        .send({ from: address, gasPrice: gasPrice.toString() })
+        .on("receipt", async function (txs) {
+          const formattedTransaction = formatTransaction(txs.transactionHash);
+          setFormattedTransactionHash(formattedTransaction!);
+          setTransactionHash(txs.transactionHash);
+          setGameScreen(true);
 
-        if (txs) {
-          try {
-            const sendPayload = await api.generateTossTransaction({
-              transactionHash: txs.transactionHash,
-              chainId: chainId!,
-              currency: currency.toUpperCase(),
-              theme: "Ching",
-            });
-            console.log("sendPayload", sendPayload);
-          } catch (error) {
-            console.log(error);
+          const dopuBalance = await tokenContract.methods
+            .balanceOf(address)
+            .call();
+          const getDecimals: number = await tokenContract.methods
+            .decimals()
+            .call();
+          const decimals = Number(getDecimals);
+          const formattedBalance = Number(
+            Number(Number(dopuBalance) / Math.pow(10, decimals)).toFixed(2)
+          );
+          setDopuBalance!(formattedBalance.toString());
+          setIsLoading(false);
+
+          if (txs) {
+            try {
+              await api.generateTossTransaction({
+                transactionHash: txs.transactionHash,
+                chainId: chainId!,
+                currency: currency.toUpperCase(),
+                theme: "Ching",
+              });
+            } catch (error) {
+              console.log(error);
+            }
           }
-        }
-      });
+        });
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("Transaction failed:", error);
+        toast.error(error.message || "Transaction failed. Please try again.");
+        stateReset();
+      }
+    }
   };
 
   const burnTokens = async () => {
@@ -157,16 +164,16 @@ const Chinese = () => {
       if (error instanceof Error) {
         console.error("Transaction failed:", error);
         toast.error(error.message || "Transaction failed. Please try again.");
-        setCurrency("xdc");
-        setInputBalance("");
-        setInputWish("");
+        stateReset();
       }
-    } finally {
-      setIsLoading(false);
-      setCurrency("xdc");
-      setInputBalance("");
-      setInputWish("");
     }
+  };
+
+  const stateReset = () => {
+    setIsLoading(false);
+    setCurrency("xdc");
+    setInputBalance("");
+    setInputWish("");
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -255,10 +262,8 @@ const Chinese = () => {
       setHexagram(undefined);
       setTransactionHash("");
       setFormattedTransactionHash("");
-      setInputBalance("");
-      setInputWish("");
       setGameScreen(false);
-      setCurrency("xdc");
+      stateReset();
     }
   }, [isDialog]);
 
@@ -272,6 +277,8 @@ const Chinese = () => {
           transactionHash={transactionHash}
           formattedTransactionHash={formattedTransactionHash}
           chainId={chainId!}
+          currency={currency}
+          balance={inputBalance}
         />
       )}
       {isLoading && (
@@ -334,34 +341,48 @@ const Chinese = () => {
           </CardHeader>
           <CardContent className="p-6">
             <form onSubmit={handleSubmit}>
-              <div className="grid w-full items-center">
-                <Label htmlFor="xdc">Select Currency:</Label>
-                <RadioGroup
-                  onValueChange={(e) => {
-                    setCurrency(e);
-                  }}
-                  className="flex gap-4 mb-4 mt-2"
-                  defaultValue={currency}
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem
-                      value="xdc"
-                      id="xdc"
-                      checked={currency === "xdc"}
-                    />
-                    <Label htmlFor="xdc">XDC</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem
-                      value="dopu"
-                      id="dopu"
-                      checked={currency === "dopu"}
-                    />
-                    <Label htmlFor="dopu">DOPU</Label>
-                  </div>
-                </RadioGroup>
-
-                <div className="flex flex-col space-y-1.5 mb-4">
+              <div className="flex flex-col space-y-2.5 mb-5">
+                <div className="text-sm block">
+                  Enter a wish or question or task below. The coin will decide
+                  with a simple <b>YES</b> or <b>NO</b> answer!
+                </div>
+                <div>
+                  <Label htmlFor="xdc">Select Currency:</Label>
+                  <RadioGroup
+                    onValueChange={(e) => {
+                      setCurrency(e);
+                    }}
+                    className="flex gap-4 mt-1"
+                    defaultValue={currency}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem
+                        value="xdc"
+                        id="xdc"
+                        checked={currency === "xdc"}
+                      />
+                      <Label htmlFor="xdc">XDC</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem
+                        value="dopu"
+                        id="dopu"
+                        checked={currency === "dopu"}
+                      />
+                      <Label htmlFor="dopu">DOPU</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+                <div className="text-sm">
+                  <NavLink
+                    target="_blank"
+                    to={currency === "xdc" ? "" : ""}
+                    className="text-blue-700 underline"
+                  >
+                    Buy {currency === "xdc" ? "XDC" : "DOPU"}
+                  </NavLink>
+                </div>
+                <div>
                   <Label htmlFor="wish">Enter wish:</Label>
                   <div className="flex w-full max-w-sm items-center space-x-2 relative">
                     <Input
@@ -379,7 +400,7 @@ const Chinese = () => {
                     />
                   </div>
                 </div>
-                <div className="flex flex-col space-y-1.5 mb-4">
+                <div>
                   <Label htmlFor="balance">
                     Enter balance ({currency.toUpperCase()} Token):
                   </Label>
@@ -387,6 +408,7 @@ const Chinese = () => {
                     <Input
                       type="text"
                       id="balance"
+                      autoComplete="off"
                       required
                       pattern="[0-9]*"
                       inputMode="numeric"
@@ -403,22 +425,29 @@ const Chinese = () => {
                     />
                   </div>
                 </div>
-                <div className="flex justify-center">
-                  <Button
-                    disabled={
-                      inputWish === "" || currency === "xdc"
-                        ? Number(inputBalance)! >
-                            Number(parseFloat(xdcBalance!)) ||
-                          1 > Number(inputBalance)
-                        : Number(inputBalance)! >
-                            Number(parseFloat(dopuBalance!)) ||
-                          1 > Number(inputBalance)
-                    }
-                    type="submit"
-                  >
-                    Wish
-                  </Button>
+                <div className="leading-5 text-sm">
+                  <b> Disclaimer:</b> I understand that the tossed coins will be
+                  burned permanently. This activity is purely for fun and
+                  entertainment purposes and does not influence real-life
+                  decisions or outcomes. Participate responsibly and enjoy the
+                  experience!
                 </div>
+              </div>
+              <div className="flex justify-center">
+                <Button
+                  disabled={
+                    inputWish === "" || currency === "xdc"
+                      ? Number(inputBalance)! >
+                          Number(parseFloat(xdcBalance!)) ||
+                        1 > Number(inputBalance)
+                      : Number(inputBalance)! >
+                          Number(parseFloat(dopuBalance!)) ||
+                        1 > Number(inputBalance)
+                  }
+                  type="submit"
+                >
+                  Toss The Coin
+                </Button>
               </div>
             </form>
           </CardContent>

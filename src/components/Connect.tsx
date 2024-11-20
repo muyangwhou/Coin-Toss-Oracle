@@ -152,15 +152,14 @@ const Connect = () => {
 
   const fetchData = async () => {
     try {
-      const sendPayload = await api.generateWalletToken({
+      const response = await api.generateWalletToken({
         walletAddress: address!,
         chainId: chainId!,
       });
-      if (sendPayload.token) {
-        localStorage.setItem("walletToken", JSON.stringify(sendPayload.token));
-        localStorage.setItem("isDisclaimer", JSON.stringify(true));
-      }
       apiCalledRef.current = true;
+      if (response) {
+        localStorage.setItem("walletToken", JSON.stringify(response.token));
+      }
     } catch (error) {
       console.error("API call error:", error);
     }

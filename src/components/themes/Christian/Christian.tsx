@@ -34,19 +34,16 @@ const Christian = () => {
   const valueInWei = web3.utils.toWei(inputBalance, "ether");
 
   const burnXdcBalance = async () => {
-    const burnAddress =
-      chainId === 51
-        ? import.meta.env.VITE_DOPU_TESTNET_BURN_ADDRESS!
-        : import.meta.env.VITE_DOPU_MAINNET_BURN_ADDRESS;
+    const burnAddress = import.meta.env.VITE_XDC_BURN_ADDRESS!;
 
-    const gasLimit = "21000";
+    const block = await web3.eth.getBlock("latest");
     const gasPrice = await web3.eth.getGasPrice();
 
     const transaction = {
       from: address,
       to: burnAddress,
       value: valueInWei,
-      gas: gasLimit,
+      gas: block.gasLimit,
       gasPrice: gasPrice,
     };
 
@@ -83,13 +80,12 @@ const Christian = () => {
 
     if (txResponse) {
       try {
-        const sendPayload = await api.generateTossTransaction({
+        await api.generateTossTransaction({
           transactionHash: txResponse.transactionHash as string,
           chainId: chainId!,
           currency: currency.toUpperCase(),
           theme: "Christian",
         });
-        console.log("sendPayload", sendPayload);
       } catch (error) {
         console.log(error);
       }
@@ -97,14 +93,16 @@ const Christian = () => {
   };
 
   const burnDopuBalance = async () => {
-    const burnAddress =
+    const contractAddress =
       chainId === 51
         ? import.meta.env.VITE_XDC_TESTNET_CONTRACT_ADDRESS!
         : import.meta.env.VITE_XDC_MAINNET_CONTRACT_ADDRESS!;
 
-    const tokenContract = new web3.eth.Contract(xrc20ABI, burnAddress);
+    const tokenContract = new web3.eth.Contract(xrc20ABI, contractAddress);
 
     const gasPrice = await web3.eth.getGasPrice();
+
+    const burnAddress = import.meta.env.VITE_DOPU_BURN_ADDRESS;
 
     await tokenContract.methods
       .transfer(burnAddress, valueInWei)
@@ -145,16 +143,16 @@ const Christian = () => {
         const response = possibleResponses[responseIndex];
         setResult({ category, response });
         setIsFlipping(true);
+        setIsLoading(false);
 
         if (txs) {
           try {
-            const sendPayload = await api.generateTossTransaction({
+            await api.generateTossTransaction({
               transactionHash: txs.transactionHash,
               chainId: chainId!,
               currency: currency.toUpperCase(),
               theme: "Christian",
             });
-            console.log("sendPayload", sendPayload);
           } catch (error) {
             console.log(error);
           }
@@ -179,11 +177,6 @@ const Christian = () => {
         setCurrency("xdc");
         toast.error(error.message);
       }
-    } finally {
-      setIsLoading(false);
-      setCurrency("xdc");
-      setInputBalance("");
-      setInputWish("");
     }
   };
 
@@ -215,6 +208,8 @@ const Christian = () => {
           transactionHash={transactionHash}
           formattedTransactionHash={formattedTransactionHash}
           chainId={chainId!}
+          currency={currency}
+          balance={inputBalance}
         />
       )}
       {isLoading && (

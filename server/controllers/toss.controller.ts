@@ -3,6 +3,7 @@ import CatchAsync from "../utils/catchAsync";
 import prisma from "../utils/prisma";
 import Web3, { WebSocketProvider } from "web3";
 import { errorHandler, responseHandler } from "../utils/reshelper";
+import { checkTransaction } from "../utils/checkTransaction";
 
 export const generateTossTransaction = CatchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -19,20 +20,42 @@ export const generateTossTransaction = CatchAsync(
       const transaction = await web3.eth.getTransaction(
         payload.transactionHash
       );
+
       if (
-        transaction /* &&
-        transaction.to === process.env.DOPU_TESTNET_BURN_ADDRESS */
+        transaction &&
+        (transaction.to === process.env.XDC_BURN_ADDRESS?.toLowerCase() ||
+          transaction.to ===
+            process.env.XDC_TESTNET_CONTRACT_ADDRESS?.toLowerCase() ||
+          transaction.to ===
+            process.env.XDC_MAINNET_CONTRACT_ADDRESS?.toLowerCase())
       ) {
-        const valueInWei = transaction.value;
-        const valueInEther = web3.utils.fromWei(valueInWei, "ether");
-        console.log(`Transaction value in Wei: ${valueInWei}`);
-        console.log(`Transaction value in Ether: ${valueInEther}`);
+        const xdcTokens = web3.utils.fromWei(transaction.value, "ether");
+
+        let dopuTokens;
+
+        if (payload.currency === "DOPU") {
+          const internalTransfer = await checkTransaction(
+            transaction.hash,
+            web3
+          );
+
+          const getValue = internalTransfer?.find(
+            (x) =>
+              String(x.from).toLowerCase() === transaction.from &&
+              x.to === process.env.DOPU_BURN_ADDRESS
+          );
+
+          dopuTokens = web3.utils.fromWei(getValue?.value as string, "ether");
+        }
 
         await prisma.tossLog.create({
           data: {
             walletId: payload.decodedWallet.id,
             theme: payload.theme,
-            tokensBurned: parseFloat(valueInEther),
+            tokensBurned:
+              payload.currency === "DOPU"
+                ? Number(parseFloat(dopuTokens!).toFixed(2))
+                : parseFloat(xdcTokens),
             chainId: payload.chainId,
             currency: payload.currency,
           },
@@ -48,12 +71,18 @@ export const generateTossTransaction = CatchAsync(
           },
           update: {
             tokensBurned: {
-              increment: parseFloat(valueInEther),
+              increment:
+                payload.currency === "DOPU"
+                  ? Number(parseFloat(dopuTokens!).toFixed(2))
+                  : parseFloat(xdcTokens),
             },
           },
           create: {
             walletId: payload.decodedWallet.id,
-            tokensBurned: parseFloat(valueInEther),
+            tokensBurned:
+              payload.currency === "DOPU"
+                ? Number(parseFloat(dopuTokens!).toFixed(2))
+                : parseFloat(xdcTokens),
             chainId: payload.chainId,
             currency: payload.currency,
           },

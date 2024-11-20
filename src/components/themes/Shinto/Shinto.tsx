@@ -35,19 +35,16 @@ const Shinto = () => {
   const valueInWei = web3.utils.toWei(inputBalance, "ether");
 
   const burnXdcBalance = async () => {
-    const burnAddress =
-      chainId === 51
-        ? import.meta.env.VITE_DOPU_TESTNET_BURN_ADDRESS!
-        : import.meta.env.VITE_DOPU_MAINNET_BURN_ADDRESS;
+    const burnAddress = import.meta.env.VITE_XDC_BURN_ADDRESS!;
 
-    const gasLimit = "21000";
+    const block = await web3.eth.getBlock("latest");
     const gasPrice = await web3.eth.getGasPrice();
 
     const transaction = {
       from: address,
       to: burnAddress,
       value: valueInWei,
-      gas: gasLimit,
+      gas: block.gasLimit,
       gasPrice: gasPrice,
     };
 
@@ -71,13 +68,12 @@ const Shinto = () => {
 
     if (txResponse) {
       try {
-        const sendPayload = await api.generateTossTransaction({
+        await api.generateTossTransaction({
           transactionHash: txResponse.transactionHash as string,
           chainId: chainId!,
           currency: currency.toUpperCase(),
           theme: "Shinto",
         });
-        console.log("sendPayload", sendPayload);
       } catch (error) {
         console.log(error);
       }
@@ -85,52 +81,70 @@ const Shinto = () => {
   };
 
   const burnDopuBalance = async () => {
-    const burnAddress =
-      chainId === 51
-        ? import.meta.env.VITE_XDC_TESTNET_CONTRACT_ADDRESS!
-        : import.meta.env.VITE_XDC_MAINNET_CONTRACT_ADDRESS!;
+    try {
+      const contractAddress =
+        chainId === 51
+          ? import.meta.env.VITE_XDC_TESTNET_CONTRACT_ADDRESS!
+          : import.meta.env.VITE_XDC_MAINNET_CONTRACT_ADDRESS!;
 
-    const tokenContract = new web3.eth.Contract(xrc20ABI, burnAddress);
+      const tokenContract = new web3.eth.Contract(xrc20ABI, contractAddress);
 
-    const gasPrice = await web3.eth.getGasPrice();
+      const gasPrice = await web3.eth.getGasPrice();
 
-    await tokenContract.methods
-      .transfer(burnAddress, valueInWei)
-      .send({ from: address, gasPrice: gasPrice.toString() })
-      .on("receipt", async function (txs) {
-        const formattedTransaction = formatTransaction(txs.transactionHash);
-        setFormattedTransactionHash(formattedTransaction!);
-        setTransactionHash(txs.transactionHash);
-        const dopuBalance = await tokenContract.methods
-          .balanceOf(address)
-          .call();
-        const getDecimals: number = await tokenContract.methods
-          .decimals()
-          .call();
-        const decimals = Number(getDecimals);
-        const formattedBalance = Number(
-          Number(Number(dopuBalance) / Math.pow(10, decimals)).toFixed(2)
-        );
-        setDopuBalance!(formattedBalance.toString());
-        const randomFortune =
-          fortunes[Math.floor(Math.random() * fortunes.length)];
-        setFortune(randomFortune);
-        setIsFlipping(true);
+      const burnAddress = import.meta.env.VITE_DOPU_BURN_ADDRESS;
 
-        if (txs) {
-          try {
-            const sendPayload = await api.generateTossTransaction({
-              transactionHash: txs.transactionHash,
-              chainId: chainId!,
-              currency: currency.toUpperCase(),
-              theme: "Shinto",
-            });
-            console.log("sendPayload", sendPayload);
-          } catch (error) {
-            console.log(error);
+      await tokenContract.methods
+        .transfer(burnAddress, valueInWei)
+        .send({ from: address, gasPrice: gasPrice.toString() })
+        .on("receipt", async function (txs) {
+          const formattedTransaction = formatTransaction(txs.transactionHash);
+          setFormattedTransactionHash(formattedTransaction!);
+          setTransactionHash(txs.transactionHash);
+          const dopuBalance = await tokenContract.methods
+            .balanceOf(address)
+            .call();
+          const getDecimals: number = await tokenContract.methods
+            .decimals()
+            .call();
+          const decimals = Number(getDecimals);
+          const formattedBalance = Number(
+            Number(Number(dopuBalance) / Math.pow(10, decimals)).toFixed(2)
+          );
+          setDopuBalance!(formattedBalance.toString());
+          const randomFortune =
+            fortunes[Math.floor(Math.random() * fortunes.length)];
+          setFortune(randomFortune);
+          setIsFlipping(true);
+          setIsLoading(false);
+          if (txs) {
+            console.log("txs", txs);
+
+            try {
+              await api.generateTossTransaction({
+                transactionHash: txs.transactionHash,
+                chainId: chainId!,
+                currency: currency.toUpperCase(),
+                theme: "Shinto",
+              });
+            } catch (error) {
+              console.log(error);
+            }
           }
-        }
-      });
+        });
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("Transaction failed:", error);
+        toast.error(error.message || "Transaction failed. Please try again.");
+        stateReset();
+      }
+    }
+  };
+
+  const stateReset = () => {
+    setIsLoading(false);
+    setCurrency("xdc");
+    setInputBalance("");
+    setInputWish("");
   };
 
   const tossCoin = async () => {
@@ -148,17 +162,9 @@ const Shinto = () => {
     } catch (error) {
       if (error instanceof Error) {
         console.log("Error occurred in approve transaction:", error);
-        setIsLoading(false);
-        setInputBalance("");
-        setInputWish("");
-        setCurrency("xdc");
+        stateReset();
         toast.error(error.message);
       }
-    } finally {
-      setIsLoading(false);
-      setCurrency("xdc");
-      setInputBalance("");
-      setInputWish("");
     }
   };
 
@@ -174,9 +180,7 @@ const Shinto = () => {
   useEffect(() => {
     if (isDialog === false) {
       setFortune(undefined);
-      setInputBalance("");
-      setInputWish("");
-      setCurrency("xdc");
+      stateReset();
     }
   }, [isDialog]);
 
@@ -190,6 +194,8 @@ const Shinto = () => {
           transactionHash={transactionHash}
           formattedTransactionHash={formattedTransactionHash}
           chainId={chainId!}
+          currency={currency}
+          balance={inputBalance}
         />
       )}
       {isLoading && (

@@ -88,13 +88,17 @@ export const generateWalletAddressToken = CatchAsync(
             leaderboard: true,
           },
         });
-        responseHandler(
-          res,
-          "Wallet connected successfully.",
-          true,
-          200,
-          walletDetails!
-        );
+        if (walletDetails) {
+          const tokenPayload = {
+            id: walletDetails.id,
+          };
+
+          const accessToken = getAccessToken(tokenPayload);
+
+          responseHandler(res, "Token generated successfully.", true, 200, {
+            token: accessToken,
+          });
+        }
       }
     } catch (error) {
       console.log("error", error);

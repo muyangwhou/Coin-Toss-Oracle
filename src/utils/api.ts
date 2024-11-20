@@ -11,9 +11,4 @@ export const api = {
     chainId: number
   ): Promise<Array<LeaderBoardDto>> =>
     fetcher(`/api/leaderboard/${currency}/${chainId}`, "GET"),
-  //   registerUser: (data) => fetcher(`/register`, "POST", data),
-  /* getAccountData: (userId: string): Promise<Array<AccountDto>> =>
-    fetcher(`/account/get-accounts/${userId}`, "GET"),
-  deleteAccountData: (id: string) => fetcher(`/account/delete/${id}`, "DELETE"),
-  updateBot: (data: BotDto) => fetcher(`/bot/update`, "PUT", data), */
 };

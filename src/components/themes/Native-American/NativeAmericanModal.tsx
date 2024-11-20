@@ -1,9 +1,4 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { NativeAmericanDto } from "@/utils/types";
 import React from "react";
@@ -16,6 +11,8 @@ declare type ModalType = {
   transactionHash: string;
   formattedTransactionHash: string;
   chainId: number;
+  currency: string;
+  balance: string;
 };
 
 const NativeAmericanModal = ({
@@ -25,23 +22,24 @@ const NativeAmericanModal = ({
   transactionHash,
   formattedTransactionHash,
   chainId,
+  currency,
+  balance,
 }: ModalType) => {
   return (
     <Dialog open={showModal} onOpenChange={() => setShowModal(!showModal)}>
-      <DialogContent className="sm:max-w-[425px] gap-0">
-        <DialogTitle className={`mb-2 text-xl font-bold capitalize`}>
+      <DialogContent className="sm:max-w-[425px] gap-0 flex flex-col space-y-2.5">
+        <DialogTitle className={`text-xl font-bold capitalize`}>
           {data.name} Spirit
         </DialogTitle>
-        <DialogDescription className="mb-1">
-          {" "}
-          <b className="text-black">
-            {Math.random() < 0.5 ? "Yes" : "No"},
-          </b>{" "}
-          {data.meaning}
-        </DialogDescription>
-        <div className="flex items-center gap-1 mt-2">
-          <Label htmlFor="name">Your transaction hash:</Label>
-          <div className="mt-0">
+        <div className="leading-5 text-sm">
+          <b> Final outcome:</b> {Math.random() < 0.5 ? "YES" : "NO"}
+        </div>
+        <div className="leading-5 text-sm">
+          <b>Number of coins burned:</b> {currency.toUpperCase()} {balance}
+        </div>
+        <div className="flex items-center gap-1 text-sm">
+          <b>Your transaction hash:</b>
+          <div>
             <NavLink
               style={{ color: "#0000EE", textDecoration: "underline" }}
               to={`${
@@ -55,6 +53,10 @@ const NativeAmericanModal = ({
             </NavLink>
           </div>
         </div>
+        <div className="leading-5 text-sm">
+          <b> Message for the day:</b> {data.meaning}
+        </div>
+        <Label>Toss again to see if destiny changes its mind!</Label>
       </DialogContent>
     </Dialog>
   );

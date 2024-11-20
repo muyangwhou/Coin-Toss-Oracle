@@ -43,7 +43,12 @@ const fetcher = async (
     const responseData = await response.json();
     return responseData?.data || responseData?.status;
   } catch (error) {
-    console.log("error", error);
+    if (error instanceof Error) {
+      console.log("error", error);
+      if (error.message === "Invalid token!") {
+        localStorage.removeItem("walletToken");
+      }
+    }
   }
 };
 

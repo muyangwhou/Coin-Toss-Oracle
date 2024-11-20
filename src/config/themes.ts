@@ -12,6 +12,7 @@ import theme11 from "../assets/images/theme11.webp";
 import theme12 from "../assets/images/theme12.webp";
 import theme13 from "../assets/images/theme13.webp";
 import theme14 from "../assets/images/theme14.webp";
+import theme15 from "../assets/images/theme15.jpg";
 
 export const themes = [
   {
@@ -98,10 +99,10 @@ export const themes = [
     img: theme14,
     imgAltText: "Judaism-theme-image",
   },
-  /* {
+  {
     title: "Custom Theme",
-    path: "/custom-theme",
-    img: theme14,
+    path: "https://docs.google.com/forms/d/e/1FAIpQLSfDUTyYim2f__0BV7QgP46AqdIOTjaeXhuly1u8Qwd-0GWP_Q/viewform",
+    img: theme15,
     imgAltText: "Custom-theme-image",
-  }, */
+  },
 ];
