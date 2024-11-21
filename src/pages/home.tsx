@@ -17,6 +17,7 @@ import Zoroastrian from "@/components/themes/Zoroastrian/Zoroastrian";
 import Christian from "@/components/themes/Christian/Christian";
 import Islamic from "@/components/themes/Islamic/Islamic";
 import Judaism from "@/components/themes/Judaism/Judaism";
+import StepCard from "@/components/ui/StepCard";
 
 const Home = () => {
   const { isConnected } = useAccount();
@@ -43,8 +44,77 @@ const Home = () => {
           <Route path="leaderboard" element={<LeaderBoard />} />
         </Routes>
       ) : (
-        <div className="flex-grow flex flex-col justify-center items-center">
-          <Connect />
+        <div className="flex-grow flex flex-col justify-start py-5 px-10 items-center">
+          <h1 className="text-4xl font-bold mb-4">Disclaimer</h1>
+          <div className="flex flex-col gap-6 mt-4">
+            <StepCard
+              stepNumber={1}
+              header={
+                <h4 className="text-xl font-semibold mb-1">
+                  For Entertainment Purposes Only:
+                </h4>
+              }
+              description={
+                <p className="text-base">
+                  This digital coin toss mechanism is designed purely for
+                  entertainment and engagement. The predictions, guidance, or
+                  interpretations provided through this tool should not be
+                  considered professional advice, religious doctrine, or a
+                  substitute for rational decision-making.
+                </p>
+              }
+            />
+            <StepCard
+              stepNumber={2}
+              header={
+                <h4 className="text-xl font-semibold mb-1">
+                  No Guarantee of Accuracy:
+                </h4>
+              }
+              description={
+                <p className="text-base">
+                  The outcomes of the coin toss are generated randomly and do
+                  not guarantee accuracy or reliability in any real-life
+                  decisions or events. Users are encouraged to make informed
+                  choices independent of the results.
+                </p>
+              }
+            />
+
+            <StepCard
+              stepNumber={3}
+              header={
+                <h4 className="text-xl font-semibold mb-1">
+                  User Responsibility:
+                </h4>
+              }
+              description={
+                <p className="text-base">
+                  Users must take full responsibility for their actions and
+                  decisions. The creators and operators of this tool are not
+                  liable for any consequences—financial, emotional, or
+                  otherwise—that arise from using this tool.
+                </p>
+              }
+            />
+            <StepCard
+              stepNumber={4}
+              header={
+                <div className="mx-[20px] my-auto">
+                  <Connect />
+                </div>
+              }
+              isRtl
+              description={
+                <p className="text-base">
+                  Simply click the Connect Wallet button on the right to link
+                  your MetaMask wallet. Approve the connection request in
+                  MetaMask, and you’re all set! Get ready to make wishes, burn
+                  amount, and enjoy the excitement of the game!
+                </p>
+              }
+            />
+          </div>
         </div>
       )}
     </>

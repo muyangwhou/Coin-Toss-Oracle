@@ -376,7 +376,11 @@ const Chinese = () => {
                 <div className="text-sm">
                   <NavLink
                     target="_blank"
-                    to={currency === "xdc" ? "" : ""}
+                    to={
+                      currency === "xdc"
+                        ? "https://xinfin.org/get-xdc"
+                        : "https://coinmarketcap.com/currencies/dopu-the-dog-with-a-purpose/#Markets"
+                    }
                     className="text-blue-700 underline"
                   >
                     Buy {currency === "xdc" ? "XDC" : "DOPU"}
