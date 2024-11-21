@@ -7,7 +7,6 @@ import { CurrencyType } from "@prisma/client";
 export const getLeaderBoardData = CatchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      console.log("req", req.params.currency);
       const getData = await prisma.leaderboard.findMany({
         where: {
           currency:

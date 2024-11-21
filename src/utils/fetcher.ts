@@ -36,7 +36,10 @@ const fetcher = async (
     params.body = JSON.stringify(data);
   }
 
-  const URL = `${window.location.origin}${url}`;
+  const URL =
+    import.meta.env.VITE_ENV! === "local"
+      ? `http://localhost:5000${url}`
+      : `${window.location.origin}${url}`;
 
   try {
     const response = await fetch(URL, params);

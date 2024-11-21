@@ -117,8 +117,6 @@ const Shinto = () => {
           setIsFlipping(true);
           setIsLoading(false);
           if (txs) {
-            console.log("txs", txs);
-
             try {
               await api.generateTossTransaction({
                 transactionHash: txs.transactionHash,

@@ -1,5 +1,6 @@
+import { api } from "@/utils/api";
 import { xrc20ABI } from "@/utils/XRC20ABI";
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState, useCallback } from "react";
 import {
   Connector,
   useAccount,
@@ -38,12 +39,14 @@ type MyBalanceContextType = {
 export const MyBalanceContext = createContext<MyBalanceContextType | null>(
   null
 );
+
 function BalanceContext({ children }: LayoutType) {
   const [dopuBalance, setDopuBalance] = useState<string>("0");
   const [xdcBalance, setXdcBalance] = useState<string>("0");
   const [gamaSymbol, setGamaSymbol] = useState<string>("");
-  const { address, isConnected } = useAccount();
+  const [apiCallMade, setApiCallMade] = useState<boolean>(false);
   const [connected, setConnected] = useState(false);
+  const { address, isConnected } = useAccount();
   const { connectors, connect } = useConnect();
   const { disconnect } = useDisconnect();
   const injectedConnector = connectors[0];
@@ -86,6 +89,25 @@ function BalanceContext({ children }: LayoutType) {
     }
   };
 
+  const handleApiCall = useCallback(async () => {
+    try {
+      const apiCallStatus = localStorage.getItem("apiCallMade");
+      if (!apiCallStatus && isConnected) {
+        const response = await api.generateWalletToken({
+          walletAddress: address!,
+          chainId: chainId!,
+        });
+        if (response) {
+          localStorage.setItem("walletToken", JSON.stringify(response.token));
+          localStorage.setItem("apiCallMade", "true");
+          setApiCallMade(true);
+        }
+      }
+    } catch (error) {
+      console.error("API call error:", error);
+    }
+  }, [address]);
+
   useEffect(() => {
     (async () => {
       const provider = await injectedConnector.getProvider();
@@ -97,8 +119,22 @@ function BalanceContext({ children }: LayoutType) {
   useEffect(() => {
     if (connected) {
       getWalletBalance();
+      handleApiCall();
     }
-  }, [address, connected, chainId]);
+  }, [address, connected, chainId, handleApiCall]);
+
+  useEffect(() => {
+    if (!isConnected) {
+      localStorage.removeItem("apiCallMade");
+      setApiCallMade(false);
+    }
+  }, [isConnected]);
+
+  const handleDisconnect = () => {
+    disconnect();
+    localStorage.removeItem("apiCallMade");
+    setApiCallMade(false);
+  };
 
   return (
     <MyBalanceContext.Provider
@@ -112,7 +148,7 @@ function BalanceContext({ children }: LayoutType) {
         isConnected,
         connect,
         connected,
-        disconnect,
+        disconnect: handleDisconnect,
         chainId,
         address,
         injectedConnector,

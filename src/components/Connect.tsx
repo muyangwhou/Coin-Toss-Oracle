@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useState } from "react";
 import { BsCopy } from "react-icons/bs";
 import {
   Tooltip,
@@ -20,7 +20,6 @@ import { FaUser, FaWallet } from "react-icons/fa";
 import { MdLeaderboard } from "react-icons/md";
 import { MyBalanceContext } from "./BalanceContext";
 import { xdc, xdcTestnet } from "viem/chains";
-import { api } from "@/utils/api";
 import { NavLink } from "react-router-dom";
 
 const DropdownMenuDemo = () => {
@@ -136,7 +135,6 @@ const DropdownMenuDemo = () => {
 const Connect = () => {
   const context = useContext(MyBalanceContext);
   const dopuBalance = context?.dopuBalance;
-  const address = context?.address;
   const xdcBalance = context?.xdcBalance;
   const gamaSymbol = context?.gamaSymbol;
   const isConnected = context?.isConnected;
@@ -148,28 +146,6 @@ const Connect = () => {
   const formatter = new Intl.NumberFormat("en-US");
   const formattedBalance = formatter.format(Number(dopuBalance));
   const formattedXdcBalance = formatter.format(Number(xdcBalance));
-  const apiCalledRef = useRef(false);
-
-  const fetchData = async () => {
-    try {
-      const response = await api.generateWalletToken({
-        walletAddress: address!,
-        chainId: chainId!,
-      });
-      apiCalledRef.current = true;
-      if (response) {
-        localStorage.setItem("walletToken", JSON.stringify(response.token));
-      }
-    } catch (error) {
-      console.error("API call error:", error);
-    }
-  };
-
-  useEffect(() => {
-    if (isConnected && !apiCalledRef.current) {
-      fetchData();
-    }
-  }, [isConnected, address, chainId]);
 
   if (isConnected) {
     return (
@@ -194,12 +170,15 @@ const Connect = () => {
       </div>
     );
   } else {
-    apiCalledRef.current = false;
+    // apiCalledRef.current = false;
     return (
       <button
         disabled={!connected}
         onClick={() => {
-          connect!({ connector: injectedConnector!, chainId });
+          connect!({
+            connector: injectedConnector!,
+            chainId: xdc.id ? xdc.id : chainId,
+          });
         }}
         className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
       >

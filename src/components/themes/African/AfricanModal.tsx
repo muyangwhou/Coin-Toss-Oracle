@@ -46,7 +46,7 @@ const AfricanModal = ({
               to={`${
                 chainId === 51
                   ? `https://testnet.xdcscan.com/tx/${transactionHash}`
-                  : `https://xdcscan.io/tx/${transactionHash}`
+                  : `https://xdcscan.com/tx/${transactionHash}`
               }`}
               target="_blank"
             >
