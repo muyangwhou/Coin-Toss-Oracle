@@ -20,7 +20,7 @@ function Account() {
   const setDopuBalance = context?.setDopuBalance;
   const address = context?.address;
   const web3 = new Web3(window.web3);
-  const valueInWei = web3.utils.toWei("1", "ether");
+  const valueInWei = web3.utils.toWei("50000", "ether");
 
   const handleCardClick = () => {
     setIsConfirmationModal(!isConfirmationModal);
