@@ -44,7 +44,7 @@ function BalanceContext({ children }: LayoutType) {
   const [dopuBalance, setDopuBalance] = useState<string>("0");
   const [xdcBalance, setXdcBalance] = useState<string>("0");
   const [gamaSymbol, setGamaSymbol] = useState<string>("");
-  const [apiCallMade, setApiCallMade] = useState<boolean>(false);
+  const [_apiCallMade, setApiCallMade] = useState<boolean>(false);
   const [connected, setConnected] = useState(false);
   const { address, isConnected } = useAccount();
   const { connectors, connect } = useConnect();
