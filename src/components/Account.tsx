@@ -64,9 +64,8 @@ function Account() {
           );
           setDopuBalance!(formattedBalance.toString());
 
-          window.open(
-            "https://docs.google.com/forms/d/e/1FAIpQLSfDUTyYim2f__0BV7QgP46AqdIOTjaeXhuly1u8Qwd-0GWP_Q/viewform"
-          );
+          window.location.href =
+            "https://docs.google.com/forms/d/e/1FAIpQLSfDUTyYim2f__0BV7QgP46AqdIOTjaeXhuly1u8Qwd-0GWP_Q/viewform";
           setIsLoading(false);
         });
     } catch (error) {
