@@ -116,7 +116,7 @@ function Account() {
       <div className="flex flex-grow flex-wrap mx-auto max-w-screen-xl my-4">
         {themes.map((th, ind) => (
           <div
-            className="p-2 w-1/5 text-center"
+            className="p-2 lg:w-1/5 md:w-1/3 w-1/2 text-center"
             key={ind}
             onClick={handleCardClick}
           >

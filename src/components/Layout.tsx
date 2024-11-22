@@ -9,7 +9,7 @@ const Layout = ({ children }: LayoutType) => {
   return (
     <div className="h-screen flex flex-col">
       <nav className="bg-white border-gray-200 dark:bg-gray-900 shadow-md">
-        <div className="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl p-4">
+        <div className="flex flex-wrap md:flex-row flex-col md:gap-0 gap-3 justify-between items-center mx-auto max-w-screen-xl p-4">
           <NavLink to="/" className="flex items-center space-x-3">
             <img
               src="https://s2.coinmarketcap.com/static/img/coins/64x64/31688.png"
