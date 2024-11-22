@@ -24,12 +24,6 @@ function Account() {
 
   const handleCardClick = () => {
     setIsConfirmationModal(!isConfirmationModal);
-    /*  if (finalConfirmation) {
-      if (path.includes("https://")) {
-        window.open(path, "_blank", "noopener,noreferrer");
-        setFinalConfirmation(false);
-      }
-    } */
   };
 
   const burnDopuBalance = async () => {
@@ -64,8 +58,11 @@ function Account() {
           );
           setDopuBalance!(formattedBalance.toString());
 
+          // window.open(path, "_blank", "noopener,noreferrer");
+
           window.location.href =
             "https://docs.google.com/forms/d/e/1FAIpQLSfDUTyYim2f__0BV7QgP46AqdIOTjaeXhuly1u8Qwd-0GWP_Q/viewform";
+
           setIsLoading(false);
         });
     } catch (error) {
@@ -116,7 +113,7 @@ function Account() {
           </div>
         </div>
       )}
-      <div className="flex flex-wrap mx-auto max-w-screen-xl my-4">
+      <div className="flex flex-grow flex-wrap mx-auto max-w-screen-xl my-4">
         {themes.map((th, ind) => (
           <div
             className="p-2 w-1/5 text-center"

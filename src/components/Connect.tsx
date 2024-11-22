@@ -170,7 +170,6 @@ const Connect = () => {
       </div>
     );
   } else {
-    // apiCalledRef.current = false;
     return (
       <button
         disabled={!connected}

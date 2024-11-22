@@ -22,7 +22,11 @@ export default function StepCard({
       >
         {stepNumber}
       </div>
-      <div className={`${isRtl ? "md:flex-row-reverse flex" : ""} flex-1 p-5`}>
+      <div
+        className={`${
+          isRtl ? "md:flex-row-reverse flex flex-col-reverse" : ""
+        } flex-1 p-5`}
+      >
         {header}
         {description}
       </div>

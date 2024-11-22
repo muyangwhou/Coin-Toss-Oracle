@@ -100,7 +100,7 @@ const Home = () => {
             <StepCard
               stepNumber={4}
               header={
-                <div className="mx-[20px] my-auto">
+                <div className="md:mx-[20px] md:my-auto mt-3">
                   <Connect />
                 </div>
               }
