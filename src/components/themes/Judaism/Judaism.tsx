@@ -36,14 +36,12 @@ const Judaism = () => {
   const burnXdcBalance = async () => {
     const burnAddress = import.meta.env.VITE_XDC_BURN_ADDRESS!;
 
-    const block = await web3.eth.getBlock("latest");
     const gasPrice = await web3.eth.getGasPrice();
 
     const transaction = {
       from: address,
       to: burnAddress,
       value: valueInWei,
-      gas: block.gasLimit,
       gasPrice: gasPrice,
     };
 
