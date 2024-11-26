@@ -21,6 +21,7 @@ import { MdLeaderboard } from "react-icons/md";
 import { MyBalanceContext } from "./BalanceContext";
 import { xdc, xdcTestnet } from "viem/chains";
 import { NavLink } from "react-router-dom";
+import { formatAddress } from "@/utils/formatAddress";
 
 const DropdownMenuDemo = () => {
   const [toolTip, setToolTip] = useState("Copy To Clipboard");
@@ -30,11 +31,6 @@ const DropdownMenuDemo = () => {
   const address = context?.address;
   const formattedAddress = formatAddress(address);
   const chainId = context?.chainId;
-
-  function formatAddress(address?: string) {
-    if (!address) return null;
-    return `${address.slice(0, 8)}…${address.slice(34, 42)}`;
-  }
 
   const handleCopyText = () => {
     navigator.clipboard
@@ -171,7 +167,7 @@ const Connect = () => {
     );
   } else {
     return (
-      <button
+      <Button
         disabled={!connected}
         onClick={() => {
           connect!({
@@ -179,10 +175,9 @@ const Connect = () => {
             chainId: xdc.id ? xdc.id : chainId,
           });
         }}
-        className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
       >
         Connect
-      </button>
+      </Button>
     );
   }
 };

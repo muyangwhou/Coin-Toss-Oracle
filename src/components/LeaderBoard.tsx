@@ -21,7 +21,6 @@ const LeaderBoard = () => {
         const finalList = data.map((e, index) => ({
           ...e,
           rank: index + 1,
-          walletId: formatWalletId(e.walletId),
         }));
         setDataList(finalList);
       } else {
@@ -32,11 +31,6 @@ const LeaderBoard = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const formatWalletId = (id: string) => {
-    if (!id) return null;
-    return `${id.slice(0, 8)}…${id.slice(28, 36)}`;
   };
 
   useEffect(() => {
@@ -78,9 +72,9 @@ const LeaderBoard = () => {
                 accessor: (e) => e.rank,
               },
               {
-                id: "walletId",
-                Header: "Wallet Id",
-                accessor: (e) => e.walletId,
+                id: "walletAddress",
+                Header: "Wallet Address",
+                accessor: (e) => e.walletAddress,
               },
               {
                 id: "currency",

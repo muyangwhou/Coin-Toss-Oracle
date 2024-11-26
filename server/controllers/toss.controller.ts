@@ -90,6 +90,12 @@ export const generateTossTransaction = CatchAsync(
           },
         });
 
+        const wallet = await prisma.wallet.findUnique({
+          where: {
+            id: payload.decodedWallet.id,
+          },
+        });
+
         await prisma.leaderboard.upsert({
           where: {
             walletId_chainId_currency: {
@@ -106,6 +112,7 @@ export const generateTossTransaction = CatchAsync(
             tokensBurned: Number(tokensBurned.toFixed(2)),
             chainId: payload.chainId,
             currency: payload.currency,
+            walletAddress: wallet?.walletAddress!,
           },
         });
 

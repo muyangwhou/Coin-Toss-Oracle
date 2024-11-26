@@ -58,6 +58,7 @@ export interface LeaderBoardDto {
   tokensBurned: number;
   chainId: number;
   currency: string;
+  walletAddress: string;
 }
 
 export type ChristianResponse = {
