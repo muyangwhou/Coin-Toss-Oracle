@@ -332,22 +332,14 @@ const Chinese = () => {
                       setCurrency(e);
                     }}
                     className="flex gap-4 mt-1"
-                    defaultValue={currency}
+                    value={currency}
                   >
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem
-                        value="xdc"
-                        id="xdc"
-                        checked={currency === "xdc"}
-                      />
+                      <RadioGroupItem value="xdc" id="xdc" />
                       <Label htmlFor="xdc">XDC</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem
-                        value="dopu"
-                        id="dopu"
-                        checked={currency === "dopu"}
-                      />
+                      <RadioGroupItem value="dopu" id="dopu" />
                       <Label htmlFor="dopu">DOPU</Label>
                     </div>
                   </RadioGroup>
