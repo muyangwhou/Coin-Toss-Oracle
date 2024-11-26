@@ -12,6 +12,7 @@ import { BsSuitDiamond } from "react-icons/bs";
 import { AfricanDto } from "@/utils/types";
 import CardForm from "@/utils/CardForm";
 import { api } from "@/utils/api";
+import { burnXdc } from "@/utils/burnXdc";
 
 const African = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -51,120 +52,116 @@ const African = () => {
   };
 
   const burnXdcBalance = async () => {
-    const burnAddress = import.meta.env.VITE_XDC_BURN_ADDRESS!;
+    try {
+      const getValues = await burnXdc(address!, valueInWei);
 
-    const gasPrice = await web3.eth.getGasPrice();
+      if (getValues) {
+        setFormattedTransactionHash(getValues.formattedTransaction!);
+        setTransactionHash(getValues.transactionHash as string);
 
-    const transaction = {
-      from: address,
-      to: burnAddress,
-      value: valueInWei,
-      gasPrice: gasPrice,
-    };
-
-    const txResponse = await web3.eth.sendTransaction(transaction);
-
-    const formattedTransaction = formatTransaction(
-      txResponse.transactionHash as string
-    );
-    setFormattedTransactionHash(formattedTransaction!);
-    setTransactionHash(txResponse.transactionHash as string);
-
-    const newBalance = await web3.eth.getBalance(address!);
-    const formattedXdcBalance = Number(
-      (Number(newBalance) / Math.pow(10, 18)).toFixed(2)
-    );
-    setXdcBalance!(formattedXdcBalance.toString());
-    const outcome = Math.random() < 0.5 ? "heads" : "tails";
-    setResult(outcomes[outcome]);
-    setIsFlipping(true);
-    setIsLoading(false);
-
-    if (txResponse) {
-      try {
-        await api.generateTossTransaction({
-          transactionHash: txResponse.transactionHash as string,
-          chainId: chainId!,
-          currency: currency.toUpperCase(),
-          theme: "African",
-        });
-      } catch (error) {
-        console.log(error);
-      }
-    }
-  };
-
-  const burnDopuBalance = async () => {
-    const contractAddress =
-      chainId === 51
-        ? import.meta.env.VITE_XDC_TESTNET_CONTRACT_ADDRESS!
-        : import.meta.env.VITE_XDC_MAINNET_CONTRACT_ADDRESS!;
-
-    const tokenContract = new web3.eth.Contract(xrc20ABI, contractAddress);
-
-    const gasPrice = await web3.eth.getGasPrice();
-
-    const burnAddress = import.meta.env.VITE_DOPU_BURN_ADDRESS;
-
-    await tokenContract.methods
-      .transfer(burnAddress, valueInWei)
-      .send({ from: address, gasPrice: gasPrice.toString() })
-      .on("receipt", async function (txs) {
-        const formattedTransaction = formatTransaction(txs.transactionHash);
-        setFormattedTransactionHash(formattedTransaction!);
-        setTransactionHash(txs.transactionHash);
-
-        const dopuBalance = await tokenContract.methods
-          .balanceOf(address)
-          .call();
-        const getDecimals: number = await tokenContract.methods
-          .decimals()
-          .call();
-
-        const decimals = Number(getDecimals);
-        const formattedBalance = Number(
-          Number(Number(dopuBalance) / Math.pow(10, decimals)).toFixed(2)
-        );
-        setDopuBalance!(formattedBalance.toString());
         const outcome = Math.random() < 0.5 ? "heads" : "tails";
         setResult(outcomes[outcome]);
         setIsFlipping(true);
         setIsLoading(false);
 
-        if (txs) {
-          try {
-            await api.generateTossTransaction({
-              transactionHash: txs.transactionHash,
-              chainId: chainId!,
-              currency: currency.toUpperCase(),
-              theme: "African",
-            });
-          } catch (error) {
-            console.log(error);
-          }
+        setXdcBalance!(getValues.formattedXdcBalance.toString());
+
+        try {
+          await api.generateTossTransaction({
+            transactionHash: getValues.transactionHash as string,
+            chainId: chainId!,
+            currency: currency.toUpperCase(),
+            theme: "African",
+          });
+        } catch (error) {
+          console.log(error);
         }
-      });
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("Transaction failed:", error);
+        toast.error(error.message || "Transaction failed. Please try again.");
+        stateReset();
+      }
+    }
+  };
+
+  const burnDopuBalance = async () => {
+    try {
+      const contractAddress =
+        chainId === 51
+          ? import.meta.env.VITE_XDC_TESTNET_CONTRACT_ADDRESS!
+          : import.meta.env.VITE_XDC_MAINNET_CONTRACT_ADDRESS!;
+
+      const tokenContract = new web3.eth.Contract(xrc20ABI, contractAddress);
+
+      const gasPrice = await web3.eth.getGasPrice();
+
+      const burnAddress = import.meta.env.VITE_DOPU_BURN_ADDRESS;
+
+      await tokenContract.methods
+        .transfer(burnAddress, valueInWei)
+        .send({ from: address, gasPrice: gasPrice.toString() })
+        .on("receipt", async function (txs) {
+          const formattedTransaction = formatTransaction(txs.transactionHash);
+          setFormattedTransactionHash(formattedTransaction!);
+          setTransactionHash(txs.transactionHash);
+
+          const dopuBalance = await tokenContract.methods
+            .balanceOf(address)
+            .call();
+          const getDecimals: number = await tokenContract.methods
+            .decimals()
+            .call();
+
+          const decimals = Number(getDecimals);
+          const formattedBalance = Number(
+            Number(Number(dopuBalance) / Math.pow(10, decimals)).toFixed(2)
+          );
+          setDopuBalance!(formattedBalance.toString());
+          const outcome = Math.random() < 0.5 ? "heads" : "tails";
+          setResult(outcomes[outcome]);
+          setIsFlipping(true);
+          setIsLoading(false);
+
+          if (txs) {
+            try {
+              await api.generateTossTransaction({
+                transactionHash: txs.transactionHash,
+                chainId: chainId!,
+                currency: currency.toUpperCase(),
+                theme: "African",
+              });
+            } catch (error) {
+              console.log(error);
+            }
+          }
+        });
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("Transaction failed:", error);
+        toast.error(error.message || "Transaction failed. Please try again.");
+        stateReset();
+      }
+    }
+  };
+
+  const stateReset = () => {
+    setIsLoading(false);
+    setCurrency("xdc");
+    setInputBalance("");
+    setInputWish("");
   };
 
   const tossCoin = async () => {
     setIsLoading(true);
     const newRotations = rotations + (2 + Math.floor(Math.random() * 3)) * 360;
     setRotations(newRotations);
-    try {
-      if (currency === "xdc") {
-        await burnXdcBalance();
-      } else {
-        await burnDopuBalance();
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        console.log("Error occurred in approve transaction:", error);
-        setIsLoading(false);
-        setInputBalance("");
-        setInputWish("");
-        setCurrency("xdc");
-        toast.error(error.message);
-      }
+
+    if (currency === "xdc") {
+      await burnXdcBalance();
+    } else {
+      await burnDopuBalance();
     }
   };
 
@@ -180,9 +177,7 @@ const African = () => {
   useEffect(() => {
     if (isDialog === false) {
       setResult(undefined);
-      setInputBalance("");
-      setInputWish("");
-      setCurrency("xdc");
+      stateReset();
     }
   }, [isDialog]);
 

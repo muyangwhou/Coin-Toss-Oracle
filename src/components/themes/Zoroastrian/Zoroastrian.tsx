@@ -9,6 +9,7 @@ import CardForm from "@/utils/CardForm";
 import { api } from "@/utils/api";
 import ZoroModal from "./ZoroModal";
 import { zoroPrediction } from "./zoroPrediction";
+import { burnXdc } from "@/utils/burnXdc";
 
 const Zoroastrian = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -33,53 +34,46 @@ const Zoroastrian = () => {
   const valueInWei = web3.utils.toWei(inputBalance, "ether");
 
   const burnXdcBalance = async () => {
-    const burnAddress = import.meta.env.VITE_XDC_BURN_ADDRESS!;
+    try {
+      const getValues = await burnXdc(address!, valueInWei);
 
-    const gasPrice = await web3.eth.getGasPrice();
+      if (getValues) {
+        setFormattedTransactionHash(getValues.formattedTransaction!);
+        setTransactionHash(getValues.transactionHash as string);
 
-    const transaction = {
-      from: address,
-      to: burnAddress,
-      value: valueInWei,
-      gasPrice: gasPrice,
-    };
+        const categories = Object.keys(zoroPrediction);
+        const category =
+          categories[Math.floor(Math.random() * categories.length)];
+        setCategory(category);
 
-    const txResponse = await web3.eth.sendTransaction(transaction);
+        const predictions =
+          zoroPrediction[category as keyof typeof zoroPrediction];
 
-    const formattedTransaction = formatTransaction(
-      txResponse.transactionHash as string
-    );
-    setFormattedTransactionHash(formattedTransaction!);
-    setTransactionHash(txResponse.transactionHash as string);
+        const result =
+          predictions[Math.floor(Math.random() * predictions.length)];
 
-    const newBalance = await web3.eth.getBalance(address!);
-    const formattedXdcBalance = Number(
-      (Number(newBalance) / Math.pow(10, 18)).toFixed(2)
-    );
-    setXdcBalance!(formattedXdcBalance.toString());
+        setPrediction(result);
+        setIsFlipping(true);
+        setIsLoading(false);
 
-    const categories = Object.keys(zoroPrediction);
-    const category = categories[Math.floor(Math.random() * categories.length)];
-    setCategory(category);
+        setXdcBalance!(getValues.formattedXdcBalance.toString());
 
-    const predictions = zoroPrediction[category as keyof typeof zoroPrediction];
-
-    const result = predictions[Math.floor(Math.random() * predictions.length)];
-
-    setPrediction(result);
-    setIsFlipping(true);
-    setIsLoading(false);
-
-    if (txResponse) {
-      try {
-        await api.generateTossTransaction({
-          transactionHash: txResponse.transactionHash as string,
-          chainId: chainId!,
-          currency: currency.toUpperCase(),
-          theme: "Zoroastrian",
-        });
-      } catch (error) {
-        console.log(error);
+        try {
+          await api.generateTossTransaction({
+            transactionHash: getValues.transactionHash as string,
+            chainId: chainId!,
+            currency: currency.toUpperCase(),
+            theme: "Zoroastrian",
+          });
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("Transaction failed:", error);
+        toast.error(error.message || "Transaction failed. Please try again.");
+        stateReset();
       }
     }
   };
@@ -163,18 +157,11 @@ const Zoroastrian = () => {
 
   const tossCoin = async () => {
     setIsLoading(true);
-    try {
-      if (currency === "xdc") {
-        await burnXdcBalance();
-      } else {
-        await burnDopuBalance();
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        console.log("Error occurred in approve transaction:", error);
-        stateReset();
-        toast.error(error.message);
-      }
+
+    if (currency === "xdc") {
+      await burnXdcBalance();
+    } else {
+      await burnDopuBalance();
     }
   };
 

@@ -20,6 +20,7 @@ import { formatTransaction } from "@/utils/formatTransactionHash";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { api } from "@/utils/api";
 import { NavLink } from "react-router-dom";
+import { burnXdc } from "@/utils/burnXdc";
 
 const Chinese = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -51,43 +52,32 @@ const Chinese = () => {
   const valueInWei = web3.utils.toWei(inputBalance, "ether");
 
   const burnXdcBalance = async () => {
-    const burnAddress = import.meta.env.VITE_XDC_BURN_ADDRESS!;
+    try {
+      const getValues = await burnXdc(address!, valueInWei);
 
-    const gasPrice = await web3.eth.getGasPrice();
+      if (getValues) {
+        setFormattedTransactionHash(getValues.formattedTransaction!);
+        setTransactionHash(getValues.transactionHash as string);
+        setGameScreen(true);
+        setIsLoading(false);
+        setXdcBalance!(getValues.formattedXdcBalance.toString());
 
-    const transaction = {
-      from: address,
-      to: burnAddress,
-      value: valueInWei,
-      gasPrice: gasPrice,
-    };
-
-    const txResponse = await web3.eth.sendTransaction(transaction);
-
-    const formattedTransaction = formatTransaction(
-      txResponse.transactionHash as string
-    );
-    setFormattedTransactionHash(formattedTransaction!);
-    setTransactionHash(txResponse.transactionHash as string);
-    setGameScreen(true);
-    setIsLoading(false);
-
-    const newBalance = await web3.eth.getBalance(address!);
-    const formattedXdcBalance = Number(
-      (Number(newBalance) / Math.pow(10, 18)).toFixed(2)
-    );
-    setXdcBalance!(formattedXdcBalance.toString());
-
-    if (txResponse) {
-      try {
-        await api.generateTossTransaction({
-          transactionHash: txResponse.transactionHash as string,
-          chainId: chainId!,
-          currency: currency.toUpperCase(),
-          theme: "Ching",
-        });
-      } catch (error) {
-        console.log(error);
+        try {
+          await api.generateTossTransaction({
+            transactionHash: getValues.transactionHash as string,
+            chainId: chainId!,
+            currency: currency.toUpperCase(),
+            theme: "Ching",
+          });
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("Transaction failed:", error);
+        toast.error(error.message || "Transaction failed. Please try again.");
+        stateReset();
       }
     }
   };
@@ -151,19 +141,10 @@ const Chinese = () => {
 
   const burnTokens = async () => {
     setIsLoading(true);
-
-    try {
-      if (currency === "xdc") {
-        await burnXdcBalance();
-      } else {
-        await burnDopuBalance();
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error("Transaction failed:", error);
-        toast.error(error.message || "Transaction failed. Please try again.");
-        stateReset();
-      }
+    if (currency === "xdc") {
+      await burnXdcBalance();
+    } else {
+      await burnDopuBalance();
     }
   };
 
