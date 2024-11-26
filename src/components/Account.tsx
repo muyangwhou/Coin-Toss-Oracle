@@ -115,18 +115,19 @@ function Account() {
       )}
       <div className="flex flex-grow flex-wrap mx-auto max-w-screen-xl my-4">
         {themes.map((th, ind) => (
-          <div
-            className="p-2 lg:w-1/5 md:w-1/3 w-1/2 text-center"
-            key={ind}
-            onClick={handleCardClick}
-          >
+          <div className="p-2 lg:w-1/5 md:w-1/3 w-1/2 text-center" key={ind}>
             {th.path.includes("https://") ? (
-              <Card className="h-full cursor-pointer">
-                <img
-                  src={th.img}
-                  alt={th.imgAltText}
-                  className="rounded-t-xl"
-                />
+              <Card
+                className="h-full cursor-pointer card-wrap"
+                onClick={handleCardClick}
+              >
+                <div className="relative overflow-hidden rounded-xl rounded-b-none">
+                  <img
+                    src={th.img}
+                    alt={th.imgAltText}
+                    className="rounded-t-xl card-img"
+                  />
+                </div>
                 <CardHeader className="p-4">
                   <CardTitle style={{ lineHeight: "24px" }}>
                     {th.title}
@@ -135,12 +136,14 @@ function Account() {
               </Card>
             ) : (
               <NavLink to={th.path}>
-                <Card className="h-full">
-                  <img
-                    src={th.img}
-                    alt={th.imgAltText}
-                    className="rounded-t-xl"
-                  />
+                <Card className="h-full card-wrap">
+                  <div className="relative overflow-hidden rounded-xl rounded-b-none">
+                    <img
+                      src={th.img}
+                      alt={th.imgAltText}
+                      className="rounded-t-xl card-img"
+                    />
+                  </div>
                   <CardHeader className="p-4">
                     <CardTitle style={{ lineHeight: "24px" }}>
                       {th.title}

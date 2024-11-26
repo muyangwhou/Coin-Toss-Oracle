@@ -91,3 +91,9 @@ table {
   border-collapse: collapse;
   border-spacing: 0;
 }
+.card-wrap:hover .card-img {
+  transform: scale(1.08);
+}
+.card-img{
+  transition: transform 0.3s ease-in-out;
+}
