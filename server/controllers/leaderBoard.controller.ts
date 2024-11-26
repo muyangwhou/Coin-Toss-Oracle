@@ -16,6 +16,9 @@ export const getLeaderBoardData = CatchAsync(
         orderBy: {
           tokensBurned: "desc",
         },
+        include: {
+          wallet: true,
+        },
       });
       responseHandler(
         res,

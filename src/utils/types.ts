@@ -58,7 +58,19 @@ export interface LeaderBoardDto {
   tokensBurned: number;
   chainId: number;
   currency: string;
+  wallet: WalletDto;
+}
+
+interface WalletDto {
+  id: string;
   walletAddress: string;
+  chainId: number;
+  dailyTossCount: number;
+  totalTossCount: number;
+  lastTossDate: null;
+  streak: number;
+  xdcBalance: number;
+  dopuBalance: number;
 }
 
 export type ChristianResponse = {

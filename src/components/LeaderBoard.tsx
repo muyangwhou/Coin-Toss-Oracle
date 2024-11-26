@@ -10,7 +10,7 @@ const LeaderBoard = () => {
   const context = useContext(MyBalanceContext);
   const chainId = context?.chainId;
   const [isLoading, setIsLoading] = useState(false);
-  const [dataList, setDataList] = useState<any[]>([]);
+  const [dataList, setDataList] = useState<LeaderBoardDto[]>([]);
   const [currency, setCurrency] = useState<string>("XDC");
 
   const getDataList = async () => {
@@ -74,7 +74,7 @@ const LeaderBoard = () => {
               {
                 id: "walletAddress",
                 Header: "Wallet Address",
-                accessor: (e) => e.walletAddress,
+                accessor: (e) => e.wallet.walletAddress,
               },
               {
                 id: "currency",

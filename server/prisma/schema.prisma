@@ -50,7 +50,6 @@ model Leaderboard {
   tokensBurned Float
   chainId        Int
   currency      CurrencyType
-  walletAddress  String
   wallet Wallet @relation(fields: [walletId], references: [id]) // Relation via Wallet's id
   @@unique([walletId, chainId, currency])
 }
