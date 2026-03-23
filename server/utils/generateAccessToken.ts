@@ -1,4 +1,6 @@
-require("dotenv").config({ path: "server/.env" });
+import dotenv from "dotenv";
+
+dotenv.config({ path: "server/.env" });
 import jwt from "jsonwebtoken";
 
 export const getAccessToken = (payload: { id: string }) => {

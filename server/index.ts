@@ -38,7 +38,7 @@ app.use(express.json());
 app.use(errorMiddleware);
 
 // Routes
-app.use("/api/*", authenticateMiddleware);
+app.use("/api", authenticateMiddleware);
 app.use("/api/", router);
 
 // Error handling for uncaught exceptions and unhandled promise rejections

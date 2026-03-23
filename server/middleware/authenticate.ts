@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import prisma from "../utils/prisma";
-import { verify } from "jsonwebtoken";
+import { verify, TokenExpiredError } from "jsonwebtoken";
 import { errorHandler } from "../utils/reshelper";
 
 interface DecodedWallet {
@@ -11,7 +11,7 @@ interface DecodedWallet {
 
 const secret = process.env.JWT_ACCESS_SECRET_KEY || "test secret";
 
-const publicRoutes = ["/api/token", "/api/leaderboard"];
+const publicRoutePrefixes = ["/api/token", "/api/leaderboard"];
 
 export const authenticateMiddleware = async (
   req: Request,
@@ -19,10 +19,11 @@ export const authenticateMiddleware = async (
   next: NextFunction
 ) => {
   // Get the token from the Authorization header
-  const { baseUrl } = req;
+  const { baseUrl, path } = req;
+  const fullPath = `${baseUrl || ""}${path || ""}`;
 
   // Check if the current route is in the array of public routes
-  if (publicRoutes.includes(baseUrl)) {
+  if (publicRoutePrefixes.some((prefix) => fullPath.startsWith(prefix))) {
     next();
     return;
   }
@@ -51,6 +52,10 @@ export const authenticateMiddleware = async (
     next();
     return;
   } catch (error) {
+    if (error instanceof TokenExpiredError) {
+      errorHandler(res, "Token expired, please log in again.", false, 401);
+      return;
+    }
     console.log(error);
     errorHandler(res, "Invalid token!", false, 403);
     return;
